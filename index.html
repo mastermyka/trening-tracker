@@ -263,6 +263,105 @@ canvas {
   max-width: 100%;
   height: auto;
 }
+/* ==== 1. iOS – brak dziwnego zoomu na inputach ==== */
+@media (max-width: 768px) {
+  .input,
+  select,
+  button,
+  textarea {
+    font-size: 16px; /* powyżej 16px Safari przestaje zoomować */
+  }
+}
+
+/* ==== 2. Ogólne – bez poziomego scrolla całej strony ==== */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* ==== 3. MOBILE: każda sekcja przewijana osobno ==== */
+@media (max-width: 768px) {
+
+  /* HEADER – górny pasek z datą / typem / wagą / przyciskami
+     przewijany osobno w bok */
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .controls {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+
+  .controls > * {
+    flex: 0 0 auto;
+    margin-right: 6px;
+  }
+
+  .actions {
+    margin-left: 0;
+  }
+
+  /* KAŻDY .row w kartach: jeśli szeroki, przewija się w bok */
+  .card .row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .card .row > * {
+    flex: 0 0 auto;  /* elementy nie zwężają się, tylko można je przewinąć */
+  }
+
+  /* TABELKI (serie / ciężar / powt.) – przewijane w środku karty */
+  .card table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    min-width: 520px; /* trochę szerzej niż ekran, żeby pojawił się scroll */
+  }
+
+  /* KALENDARZ – osobny poziomy scroll z dniami tygodnia */
+  #calendarWeek {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #calendarWeek .week-grid {
+    display: flex;      /* zamiast grid z sztywnym podziałem */
+    flex-wrap: nowrap;
+    width: max-content; /* szerokość wg zawartości */
+  }
+
+  #calendarWeek .week-day {
+    flex: 0 0 90px;     /* każda „kratka” ma stałą szerokość -> pojawi się scroll */
+  }
+
+  /* Historia – przyciski nie wymuszają szerokiej karty */
+  .history-item {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .history-buttons {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
+
+  /* Wykresy – nie wychodzą poza ekran */
+  canvas {
+    max-width: 100%;
+    height: auto;
+  }
+}
 
 </style>
 </head>
