@@ -1,0 +1,970 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Trening Tracker Premium 4.3</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f7fb; --card:#fff; --text:#0b1226; --muted:#6b7280; --accent:#2b8aef;
+  --accent-2:#7dd3fc; --success:#10b981; --warn:#f59e0b; --error:#ef4444;
+}
+[data-theme="dark"]{
+  --bg:#071022; --card:#071827; --text:#e6eef8; --muted:#9aa9bc; --accent:#4fb3ff;
+  --accent-2:#2b8aef; --success:#34d399; --warn:#fbbf24; --error:#f87171;
+}
+*{box-sizing:border-box;font-family:Inter,system-ui,Arial,Helvetica,sans-serif}
+body{margin:12px;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap}
+h1{font-size:18px;margin:0;font-weight:600}
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.input, select, button, textarea{padding:8px;border-radius:10px;border:1px solid rgba(11,18,38,0.06);background:var(--card);color:var(--text)}
+textarea{resize:none}
+.small{font-size:12px;color:var(--muted)}
+.container{display:grid;grid-template-columns:1fr 420px;gap:12px;align-items:start}
+.card{background:var(--card);border-radius:14px;padding:12px;box-shadow:0 6px 18px rgba(2,6,23,0.06);}
+.workout-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:6px;border-bottom:1px solid rgba(11,18,38,0.06);font-size:14px}
+th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
+.series-input{width:68px;padding:6px;border-radius:8px;border:1px solid rgba(11,18,38,0.06);text-align:center}
+.checkbox{transform:scale(1.05);margin-right:6px}
+.section-title{font-weight:600;margin-bottom:6px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.note{font-size:13px;color:var(--muted);margin-top:8px}
+.stats{display:flex;flex-direction:column;gap:8px}
+.stat-row{display:flex;justify-content:space-between;background:rgba(11,18,38,0.03);padding:8px;border-radius:8px}
+.green{color:var(--success);font-weight:700}
+.yellow{color:var(--warn);font-weight:700}
+.red{color:var(--error);font-weight:700}
+.actions{display:flex;gap:8px;margin-left:8px}
+.btn-primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;border:none;padding:8px 12px;border-radius:10px;cursor:pointer}
+.btn-ghost{background:transparent;border:1px solid rgba(11,18,38,0.06);padding:8px 10px;border-radius:10px;cursor:pointer}
+.btn-small{font-size:11px;padding:4px 8px;border-radius:8px}
+.history-list{max-height:300px;overflow:auto;margin-top:8px;display:flex;flex-direction:column;gap:8px}
+.history-item{padding:8px;border-radius:8px;background:rgba(11,18,38,0.02);display:flex;justify-content:space-between;align-items:center}
+.flex-col{display:flex;flex-direction:column;gap:6px}
+.footer{margin-top:10px;font-size:12px;color:var(--muted)}
+.canvas-wrap{background:var(--card);border-radius:10px;padding:8px;}
+@media (max-width:980px){.container{grid-template-columns:1fr;}}
+.progress-bar{height:10px;border-radius:5px;background:rgba(11,18,38,0.1);margin-top:4px;overflow:hidden}
+.progress-fill{height:10px;background:var(--accent);width:0%;}
+.timer{font-weight:700;font-size:16px;margin-top:6px;text-align:center}
+.set-row-done{background:rgba(16,185,129,0.08);}
+.set-row-partial{background:rgba(245,158,11,0.08);}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:999px;font-size:11px}
+.badge-dot{width:8px;height:8px;border-radius:999px;background:var(--accent);}
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:6px;font-size:11px}
+.week-day{padding:6px;border-radius:8px;background:rgba(11,18,38,0.02);min-height:60px}
+.week-day strong{font-size:11px;display:block;margin-bottom:2px}
+.week-day span{display:block}
+.tag{display:inline-block;padding:2px 6px;border-radius:999px;font-size:10px;background:rgba(11,18,38,0.04);margin-top:2px}
+.kcal{font-weight:600}
+.history-buttons{display:flex;gap:6px;align-items:center}
+
+/* Mobile friendly tweaks */
+@media (max-width:768px){
+  body{margin:6px;}
+  header{
+    position:sticky;
+    top:0;
+    z-index:40;
+    padding:6px 4px;
+    background:var(--bg);
+  }
+  h1{font-size:16px;}
+  .controls{gap:4px;}
+  .input, select, button{
+    padding:10px 12px;
+    font-size:14px;
+  }
+  .btn-primary, .btn-ghost{
+    min-height:40px;
+  }
+  .series-input{
+    width:72px;
+    padding:8px;
+    font-size:14px;
+  }
+  .checkbox{
+    transform:scale(1.3);
+    margin-right:8px;
+  }
+  .card{
+    padding:10px;
+  }
+  .history-list{
+    max-height:260px;
+  }
+}
+</style>
+</head>
+<body data-theme="light">
+<header>
+  <div>
+    <h1>Trening Tracker – Premium 4.3</h1>
+    <div class="small">Styl C – jasny/ciemny | Progresja, kalendarz, statystyki, Apple Watch, własne plany</div>
+  </div>
+  <div class="controls">
+    <input type="date" id="sessionDate" class="input">
+    <select id="sessionType" class="input"></select>
+    <input id="bodyWeight" class="input" placeholder="Waga kg" type="number" step="0.1" style="width:95px">
+    <div class="actions">
+      <button id="themeToggle" class="btn-ghost">Dark</button>
+      <button id="saveBtn" class="btn-primary">Zapisz sesję</button>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div>
+    <div class="card" id="workoutCard">
+      <div class="workout-title">
+        <div class="flex-col">
+          <div class="section-title" id="planTitle">Trening A</div>
+          <div class="small" id="planSubtitle">10 min rower | rozgrzewka</div>
+        </div>
+        <div class="small">Kolorowe serie, automatyczna progresja</div>
+      </div>
+
+      <!-- Dane z Apple Watch -->
+      <div class="card" style="margin-top:0;">
+        <div class="section-title">Dane z Apple Watch</div>
+        <div class="row">
+          <input id="sessionKcal" class="input" type="number" placeholder="Kcal (Apple Watch)" style="width:130px">
+          <input id="avgHr" class="input" type="number" placeholder="Średnie tętno" style="width:120px">
+          <input id="maxHr" class="input" type="number" placeholder="Maks. tętno" style="width:120px">
+          <input id="durationMin" class="input" type="number" placeholder="Czas (min)" style="width:100px">
+        </div>
+        <div class="small note">Jeśli podasz kcal z Apple Watch, będą użyte w statystykach (autoliczenie jest tylko zapasowe).</div>
+      </div>
+
+      <div id="workoutArea" style="margin-top:10px;"></div>
+
+      <div class="card" style="margin-top:10px">
+        <div class="section-title">Timer / Interwał (sekundy)</div>
+        <div class="row">
+          <input type="number" id="restTime" class="input" placeholder="Przerwa 60" style="width:100px">
+          <button id="startTimer" class="btn-primary">Start</button>
+          <button id="stopTimer" class="btn-ghost">Stop</button>
+          <div class="timer" id="timerDisplay">0s</div>
+        </div>
+        <div class="small note">Po skończeniu odliczania usłyszysz sygnał dźwiękowy.</div>
+      </div>
+
+      <div class="card" style="margin-top:10px" id="planEditorCard">
+        <div class="section-title">Edytor planów / własne treningi</div>
+        <div class="small">Zmień ćwiczenia, serie, powtórzenia lub dodaj nowy plan. Domyślne A/B/C są bazą – możesz je modyfikować.</div>
+        <div class="row" style="margin-top:6px">
+          <select id="planSelect" class="input"></select>
+          <button id="newPlanBtn" class="btn-ghost btn-small">Nowy plan</button>
+        </div>
+        <div id="planEditorArea" class="small" style="margin-top:8px"></div>
+        <button id="addExerciseBtn" class="btn-ghost btn-small" style="margin-top:6px">Dodaj ćwiczenie</button>
+        <button id="savePlanBtn" class="btn-primary" style="margin-top:8px;width:100%">Zapisz plan</button>
+      </div>
+    </div>
+  </div>
+
+  <aside>
+    <div class="card">
+      <div class="section-title">Kalendarz / podsumowanie tygodnia</div>
+      <div id="calendarWeek" class="small">Ładowanie...</div>
+      <div style="margin-top:10px;">
+        <div class="section-title">Zaawansowane statystyki</div>
+        <div id="statsWeek" class="small">Ładowanie...</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="section-title">Historia sesji</div>
+        <button id="loadLastBtn" class="btn-ghost btn-small">Otwórz ostatnią</button>
+      </div>
+      <div id="history" class="history-list"><div class="small">Brak zapisanych sesji.</div></div>
+      <div class="footer small">Dane zapisane lokalnie (localStorage). Możesz w każdej chwili zrobić backup przez skopiowanie danych z konsoli.</div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <div class="section-title">Progres / wykresy</div>
+      <div class="canvas-wrap"><canvas id="chartVolume" style="width:100%;height:180px"></canvas></div>
+      <div class="canvas-wrap" style="margin-top:10px"><canvas id="chartWeight" style="width:100%;height:180px"></canvas></div>
+    </div>
+  </aside>
+</div>
+
+<!-- AUDIO: sygnał po skończeniu timera (musi być przed skryptem, żeby JS go widział) -->
+<audio id="alarmAudio" preload="auto">
+  <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" type="audio/ogg">
+  Twoja przeglądarka nie obsługuje audio.
+</audio>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// --- Klucze storage ---
+const STORAGE_KEYS = {
+  PLANS: 'tt_plans_v4',
+  SESSIONS: 'tt_sessions_v4',
+  SETTINGS: 'tt_settings_v4'
+};
+
+// --- Domyślne plany ---
+const defaultPlans = {
+  A: {
+    id: 'A',
+    label: 'Trening A',
+    warmup: '10 min rower - rozgrzewka',
+    exercises: [
+      {name:"Wyciskanie na ławce płaskiej", sets:4, reps:"6-10", muscle:"klatka"},
+      {name:"Wiosłowanie w opadzie", sets:4, reps:"8-12", muscle:"plecy"},
+      {name:"Hip thrust", sets:4, reps:"8-12", muscle:"pośladki"},
+      {name:"Prostowanie nóg", sets:3, reps:"12-15", muscle:"czworogłowe"},
+      {name:"Uginanie nóg", sets:3, reps:"12-15", muscle:"dwugłowe"}
+    ]
+  },
+  B: {
+    id: 'B',
+    label: 'Trening B',
+    warmup: '10 min rower - rozgrzewka',
+    exercises: [
+      {name:"Ściąganie drążka do klatki", sets:4, reps:"8-12", muscle:"plecy"},
+      {name:"Wyciskanie nad głowę hantlami", sets:3, reps:"6-10", muscle:"barki"},
+      {name:"Step-up niski", sets:3, reps:"8-10/str", muscle:"nogi"},
+      {name:"Martwy ciąg rumuński", sets:3, reps:"8-12", muscle:"dwugłowe"}
+    ]
+  },
+  C: {
+    id: 'C',
+    label: 'Trening C',
+    warmup: '10 min rower - rozgrzewka',
+    exercises: [
+      {name:"Wyciskanie hantli na skosie", sets:4, reps:"8-12", muscle:"klatka"},
+      {name:"Rozpiętki lub guma fly", sets:3, reps:"12-15", muscle:"klatka"},
+      {name:"Wiosłowanie dolnym wyciągiem", sets:3, reps:"10-12", muscle:"plecy"},
+      {name:"Hip thrust", sets:4, reps:"8-12", muscle:"pośladki"}
+    ]
+  }
+};
+
+// --- Pomocnicze DOM ---
+function el(q){ return document.querySelector(q) }
+function elAll(q){ return Array.from(document.querySelectorAll(q)) }
+
+const workoutArea = el('#workoutArea');
+const sessionType = el('#sessionType');
+const sessionDate = el('#sessionDate');
+const saveBtn = el('#saveBtn');
+const historyDiv = el('#history');
+const planTitle = el('#planTitle');
+const planSubtitle = el('#planSubtitle');
+const themeToggle = el('#themeToggle');
+const timerDisplay = el('#timerDisplay');
+const planSelect = el('#planSelect');
+const planEditorArea = el('#planEditorArea');
+const calendarWeekDiv = el('#calendarWeek');
+const statsWeekDiv = el('#statsWeek');
+const loadLastBtn = el('#loadLastBtn');
+const alarmAudio = document.getElementById('alarmAudio');
+
+let timerInterval = null;
+let timerSec = 0;
+let plans = {};
+let sessions = [];
+let chartVolume = null;
+let chartWeight = null;
+
+// --- Storage helpers ---
+function loadPlans(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEYS.PLANS);
+    if(!raw) return JSON.parse(JSON.stringify(defaultPlans));
+    const parsed = JSON.parse(raw);
+    return {...JSON.parse(JSON.stringify(defaultPlans)), ...parsed};
+  }catch(e){
+    console.warn('Błąd wczytywania planów', e);
+    return JSON.parse(JSON.stringify(defaultPlans));
+  }
+}
+function savePlans(){
+  localStorage.setItem(STORAGE_KEYS.PLANS, JSON.stringify(plans));
+}
+
+function loadSessions(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEYS.SESSIONS);
+    if(!raw) return [];
+    return JSON.parse(raw);
+  }catch(e){
+    console.warn('Błąd wczytywania sesji', e);
+    return [];
+  }
+}
+function saveSessions(){
+  localStorage.setItem(STORAGE_KEYS.SESSIONS, JSON.stringify(sessions));
+}
+
+// --- Theme toggle ---
+themeToggle.addEventListener('click', ()=>{
+  const current = document.body.getAttribute('data-theme') || 'light';
+  const next = current==='light' ? 'dark' : 'light';
+  document.body.setAttribute('data-theme', next);
+  themeToggle.textContent = next==='dark' ? 'Light' : 'Dark';
+});
+
+// --- Inicjalizacja planów w selectach ---
+function refreshPlanSelects(){
+  sessionType.innerHTML = '';
+  planSelect.innerHTML = '';
+  Object.values(plans).forEach(p=>{
+    const opt1 = document.createElement('option');
+    opt1.value = p.id;
+    opt1.textContent = p.label;
+    sessionType.appendChild(opt1);
+
+    const opt2 = document.createElement('option');
+    opt2.value = p.id;
+    opt2.textContent = p.label;
+    planSelect.appendChild(opt2);
+  });
+}
+
+// --- Render planu treningowego ---
+function renderPlan(typeId){
+  const plan = plans[typeId];
+  if(!plan) return;
+  planTitle.textContent = plan.label;
+  planSubtitle.textContent = plan.warmup || '10 min rower - rozgrzewka';
+  workoutArea.innerHTML = '';
+  const exercises = plan.exercises || [];
+
+  exercises.forEach((ex, idx)=>{
+    const wrapper=document.createElement('div');
+    wrapper.className='card';
+    let html=`<div style="display:flex;justify-content:space-between;align-items:center">
+      <div><strong>${ex.name}</strong><div class="small">${ex.muscle || ''}</div></div>
+      <div class="small">Serii: ${ex.sets} • Powt: ${ex.reps}</div>
+    </div>`;
+    html+='<table><thead><tr><th>Seria</th><th>Ciężar (kg)</th><th>Powt.</th><th>Odhacz</th></tr></thead><tbody>';
+    for(let s=1;s<=ex.sets;s++){
+      html+=`<tr class="set-row" data-ex="${idx}" data-set="${s}">
+        <td>S${s}</td>
+        <td><input type="number" class="series-input weight-input" data-ex="${idx}" data-set="${s}" placeholder="" step="0.5"/></td>
+        <td><input class="series-input" type="text" value="${ex.reps}" disabled/></td>
+        <td><input type="checkbox" class="checkbox" data-ex="${idx}" data-set="${s}"/></td>
+      </tr>`;
+    }
+    html+='</tbody></table>';
+    html+='<div class="progress-bar"><div class="progress-fill" id="progress-'+idx+'"></div></div>';
+    wrapper.innerHTML=html;
+    workoutArea.appendChild(wrapper);
+  });
+
+  attachSeriesEvents();
+  applyLastSessionProgression(typeId);
+}
+
+// --- Kolorowanie serii i progress bar ---
+function attachSeriesEvents(){
+  elAll('.checkbox').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      updateProgress();
+      updateSetRowStyle(cb);
+    });
+  });
+}
+function updateSetRowStyle(cb){
+  const row = cb.closest('.set-row');
+  if(!row) return;
+  if(cb.checked){
+    row.classList.add('set-row-done');
+    row.classList.remove('set-row-partial');
+  }else{
+    row.classList.remove('set-row-done');
+  }
+}
+function updateProgress(){
+  const plan = plans[sessionType.value];
+  if(!plan) return;
+  (plan.exercises || []).forEach((ex, idx)=>{
+    const boxes = elAll(`input.checkbox[data-ex="${idx}"]`);
+    let done=boxes.filter(x=>x.checked).length;
+    let total=boxes.length;
+    let pct = total ? Math.round((done/total)*100) : 0;
+    const fill = el('#progress-'+idx);
+    if(fill){
+      fill.style.width=pct+'%';
+      if(done===total && total>0){
+        fill.style.backgroundColor='var(--success)';
+      }else if(done>0){
+        fill.style.backgroundColor='var(--warn)';
+      }else{
+        fill.style.backgroundColor='var(--error)';
+      }
+    }
+  });
+}
+
+// --- Automatyczna progresja (na podstawie poprzedniej sesji) ---
+function parseDate(d){ return new Date(d + 'T00:00:00'); }
+
+function applyLastSessionProgression(planId){
+  const currentDate = sessionDate.value || new Date().toISOString().slice(0,10);
+  const relevant = sessions
+    .filter(s=>s.planId===planId && s.date <= currentDate)
+    .sort((a,b)=> parseDate(b.date) - parseDate(a.date));
+  if(!relevant.length) return;
+  const last = relevant[0];
+
+  (last.exercises || []).forEach((exLast, idx)=>{
+    const currentPlan = plans[planId];
+    if(!currentPlan || !currentPlan.exercises[idx]) return;
+    const sameName = currentPlan.exercises[idx].name === exLast.name;
+    if(!sameName) return;
+
+    const allDone = (exLast.sets || []).every(st=>st.done && st.weight>0);
+    const step = allDone ? 2.5 : 0;
+
+    (exLast.sets || []).forEach((setLast, sIdx)=>{
+      const input = el(`input.weight-input[data-ex="${idx}"][data-set="${sIdx+1}"]`);
+      if(!input) return;
+      const base = parseFloat(setLast.weight) || 0;
+      const next = base + step;
+      if(next>0) input.value = next.toFixed(1);
+    });
+  });
+}
+
+// --- Timer z odblokowaniem audio ---
+el('#startTimer').addEventListener('click', ()=>{
+  const val = parseInt(el('#restTime').value) || 60;
+  timerSec = val;
+  timerDisplay.textContent = timerSec + 's';
+  clearInterval(timerInterval);
+
+  // "Odblokowanie" dźwięku przez akcję użytkownika
+  if (alarmAudio) {
+    alarmAudio.play()
+      .then(()=>{
+        alarmAudio.pause();
+        alarmAudio.currentTime = 0;
+      })
+      .catch(()=>{ /* ignorujemy błąd, jeśli cicho */ });
+  }
+
+  timerInterval = setInterval(()=>{
+    timerSec--;
+    if (timerSec <= 0) {
+      clearInterval(timerInterval);
+      timerDisplay.textContent = 'KONIEC!';
+
+      // Odtworzenie dźwięku po skończeniu
+      if (alarmAudio) {
+        alarmAudio.currentTime = 0;
+        alarmAudio.play().catch(()=>{});
+      }
+
+      const originalTitle = document.title;
+      let flashes = 0;
+      const flashInt = setInterval(()=>{
+        document.title = (document.title === 'ODPOCZYNEK!') ? originalTitle : 'ODPOCZYNEK!';
+        flashes++;
+        if (flashes > 6){
+          clearInterval(flashInt);
+          document.title = originalTitle;
+        }
+      }, 500);
+      return;
+    }
+    timerDisplay.textContent = timerSec + 's';
+  }, 1000);
+});
+
+el('#stopTimer').addEventListener('click', ()=>{
+  clearInterval(timerInterval);
+  timerDisplay.textContent='0s';
+  if (alarmAudio) {
+    alarmAudio.pause();
+    alarmAudio.currentTime = 0;
+  }
+});
+
+// --- Szacowanie kcal (zapas jeśli brak z AW) ---
+function estimateKcal(totalVolume, bodyWeight){
+  const bw = bodyWeight || 70;
+  const base = totalVolume * 0.08;
+  const scaled = base * (bw/70);
+  return Math.round(scaled);
+}
+
+// --- Zapis sesji ---
+function saveSession(){
+  const date = sessionDate.value || new Date().toISOString().slice(0,10);
+  const planId = sessionType.value;
+  const plan = plans[planId];
+  if(!plan) return alert('Brak planu dla wybranego treningu.');
+  const bodyWeight = parseFloat(el('#bodyWeight').value) || null;
+
+  const sessionKcalManual = parseInt(el('#sessionKcal').value) || null;
+  const avgHr = parseInt(el('#avgHr').value) || null;
+  const maxHr = parseInt(el('#maxHr').value) || null;
+  const durationMin = parseInt(el('#durationMin').value) || null;
+
+  const exData = [];
+  let totalVolume = 0;
+  let totalWeight = 0;
+  (plan.exercises || []).forEach((ex, idx)=>{
+    const sets = [];
+    for(let s=1;s<=ex.sets;s++){
+      const wInput = el(`input.weight-input[data-ex="${idx}"][data-set="${s}"]`);
+      const cb = el(`input.checkbox[data-ex="${idx}"][data-set="${s}"]`);
+      const weight = wInput ? parseFloat(wInput.value)||0 : 0;
+      const repsStr = ex.reps || '';
+      const repsNum = parseInt(repsStr) || 0;
+      totalVolume += weight * repsNum;
+      totalWeight += weight;
+      sets.push({
+        set: s,
+        weight,
+        repsText: repsStr,
+        done: cb ? cb.checked : false
+      });
+    }
+    exData.push({
+      name: ex.name,
+      muscle: ex.muscle || '',
+      sets
+    });
+  });
+
+  const kcalAuto = estimateKcal(totalVolume, bodyWeight);
+  const kcalFromWatch = sessionKcalManual;
+  const kcal = kcalFromWatch || kcalAuto;
+
+  const session = {
+    id: Date.now(),
+    date,
+    planId,
+    planLabel: plan.label,
+    bodyWeight,
+    exercises: exData,
+    totalVolume,
+    totalWeight,
+    kcal,
+    kcalAuto,
+    kcalFromWatch,
+    avgHr,
+    maxHr,
+    durationMin
+  };
+  sessions.push(session);
+  sessions.sort((a,b)=> parseDate(a.date) - parseDate(b.date));
+  saveSessions();
+  renderHistory();
+  renderCalendarAndStats();
+  updateCharts();
+  alert('Sesja zapisana (Premium 4.3 ✅)');
+}
+
+// --- Historia sesji ---
+function renderHistory(){
+  historyDiv.innerHTML = '';
+  if(!sessions.length){
+    historyDiv.innerHTML = '<div class="small">Brak zapisanych sesji.</div>';
+    return;
+  }
+  const last = [...sessions].sort((a,b)=> parseDate(b.date) - parseDate(a.date)).slice(0,30);
+  last.forEach(s=>{
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    const date = s.date;
+    const label = s.planLabel || s.planId;
+    const kcalTxt = s.kcal ? `${s.kcal} kcal${s.kcalFromWatch ? ' (AW)' : ''}` : '–';
+    const hrTxt = s.avgHr ? `HR: ${s.avgHr}${s.maxHr ? ' / '+s.maxHr : ''}` : '';
+    const durTxt = s.durationMin ? `Czas: ${s.durationMin} min` : '';
+
+    div.innerHTML = `
+      <div>
+        <div class="small"><strong>${date}</strong> • ${label}</div>
+        <div class="small">
+          Objętość: ${Math.round(s.totalVolume)} kg • 
+          Kcal: <span class="kcal">${kcalTxt}</span>
+          ${durTxt ? ' • '+durTxt : ''}
+          ${hrTxt ? ' • '+hrTxt : ''}
+        </div>
+      </div>
+      <div class="history-buttons">
+        <button class="btn-ghost btn-small details-btn" data-id="${s.id}">Szczegóły</button>
+        <button class="btn-primary btn-small load-btn" data-id="${s.id}">Załaduj</button>
+      </div>
+    `;
+    historyDiv.appendChild(div);
+  });
+
+  elAll('.details-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> showSessionDetails(parseInt(btn.getAttribute('data-id'))));
+  });
+  elAll('.load-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> loadSessionToForm(parseInt(btn.getAttribute('data-id'))));
+  });
+}
+
+function showSessionDetails(id){
+  const s = sessions.find(x=>x.id===id);
+  if(!s) return;
+  let msg = `Data: ${s.date}\nPlan: ${s.planLabel}\nWaga ciała: ${s.bodyWeight || '-'} kg\n`;
+  msg += `Kcal: ${s.kcal}${s.kcalFromWatch ? ' (z Apple Watch)' : ' (szacowane)'}\n`;
+  if(s.durationMin) msg += `Czas: ${s.durationMin} min\n`;
+  if(s.avgHr) msg += `Średnie HR: ${s.avgHr}\n`;
+  if(s.maxHr) msg += `Maks HR: ${s.maxHr}\n`;
+  msg += `Objętość: ${Math.round(s.totalVolume)} kg\n\nĆwiczenia:\n`;
+  (s.exercises || []).forEach(ex=>{
+    msg += `- ${ex.name}\n`;
+    (ex.sets || []).forEach(st=>{
+      msg += `   S${st.set}: ${st.weight || 0} kg x ${st.repsText} ${st.done ? '✓' : ''}\n`;
+    });
+  });
+  alert(msg);
+}
+
+// --- Ładowanie sesji do formularza (z historii / ostatnia) ---
+function loadSessionToForm(id){
+  const s = sessions.find(x=>x.id===id);
+  if(!s) return;
+
+  if(plans[s.planId]){
+    sessionType.value = s.planId;
+    planSelect.value = s.planId;
+    renderPlan(sessionType.value);
+    renderPlanEditor();
+  }
+  sessionDate.value = s.date;
+
+  el('#bodyWeight').value = s.bodyWeight || '';
+  el('#sessionKcal').value = s.kcalFromWatch || '';
+  el('#avgHr').value = s.avgHr || '';
+  el('#maxHr').value = s.maxHr || '';
+  el('#durationMin').value = s.durationMin || '';
+
+  const plan = plans[s.planId];
+  if(plan){
+    (plan.exercises || []).forEach((ex, idx)=>{
+      const sEx = (s.exercises || [])[idx];
+      if(!sEx) return;
+      (sEx.sets || []).forEach(st=>{
+        const wInput = el(`input.weight-input[data-ex="${idx}"][data-set="${st.set}"]`);
+        const cb = el(`input.checkbox[data-ex="${idx}"][data-set="${st.set}"]`);
+        if(wInput) wInput.value = st.weight || '';
+        if(cb){
+          cb.checked = !!st.done;
+          updateSetRowStyle(cb);
+        }
+      });
+    });
+    updateProgress();
+  }
+
+  renderCalendarAndStats();
+  alert('Sesja załadowana do formularza ✅');
+}
+
+// --- Przycisk "Otwórz ostatnią" ---
+loadLastBtn.addEventListener('click', ()=>{
+  if(!sessions.length){
+    alert('Brak zapisanych sesji.');
+    return;
+  }
+  const last = [...sessions].sort((a,b)=> parseDate(b.date) - parseDate(a.date))[0];
+  loadSessionToForm(last.id);
+});
+
+// --- Kalendarz tygodniowy + statystyki ---
+function getWeekRange(baseDateStr){
+  const d = baseDateStr ? parseDate(baseDateStr) : new Date();
+  const day = d.getDay();
+  const diffToMonday = (day+6)%7;
+  const monday = new Date(d);
+  monday.setDate(d.getDate() - diffToMonday);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate()+6);
+  const fmt = (x)=> x.toISOString().slice(0,10);
+  return {monday, sunday, mondayStr:fmt(monday), sundayStr:fmt(sunday)};
+}
+
+function renderCalendarAndStats(){
+  const baseDateStr = sessionDate.value || new Date().toISOString().slice(0,10);
+  const {monday, sunday} = getWeekRange(baseDateStr);
+
+  let html = '<div class="badge"><span class="badge-dot"></span><span>Bieżący tydzień</span></div>';
+  html += '<div class="week-grid">';
+  for(let i=0;i<7;i++){
+    const dayDate = new Date(monday);
+    dayDate.setDate(monday.getDate()+i);
+    const dStr = dayDate.toISOString().slice(0,10);
+    const daySessions = sessions.filter(s=>s.date===dStr);
+    const dayName = ['Pn','Wt','Śr','Cz','Pt','So','Nd'][i];
+    const totalVol = daySessions.reduce((acc,s)=>acc+s.totalVolume,0);
+    const intensityClass = totalVol===0 ? '' : (totalVol<2000?'yellow':'green');
+
+    html += `<div class="week-day">
+      <strong>${dayName}</strong>
+      <span>${dStr.slice(5)}</span>`;
+    if(!daySessions.length){
+      html += `<span class="small">Brak treningu</span>`;
+    }else{
+      daySessions.forEach(s=>{
+        html += `<div class="tag">${s.planLabel || s.planId}</div>`;
+      });
+      if(totalVol>0){
+        html += `<div class="small ${intensityClass}">Objętość: ${Math.round(totalVol)} kg</div>`;
+      }
+    }
+    html += `</div>`;
+  }
+  html += '</div>';
+  calendarWeekDiv.innerHTML = html;
+
+  const weekSessions = sessions.filter(s=>{
+    const d = parseDate(s.date);
+    return d>=monday && d<=sunday;
+  });
+
+  const now = baseDateStr ? parseDate(baseDateStr) : new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const monthSessions = sessions.filter(s=>{
+    const d = parseDate(s.date);
+    return d.getFullYear()===year && d.getMonth()===month;
+  });
+
+  const weekVolume = weekSessions.reduce((acc,s)=>acc+s.totalVolume,0);
+  const weekKcal = weekSessions.reduce((acc,s)=>acc+(s.kcal||0),0);
+  const monthVolume = monthSessions.reduce((acc,s)=>acc+s.totalVolume,0);
+  const monthKcal = monthSessions.reduce((acc,s)=>acc+(s.kcal||0),0);
+
+  const bwSessions = sessions.filter(s=>s.bodyWeight);
+  const lastBw = bwSessions.length ? bwSessions[bwSessions.length-1].bodyWeight : null;
+
+  let statsHtml = '';
+  statsHtml += `<div class="stats">
+    <div class="stat-row">
+      <span>Tydzień – ilość treningów</span>
+      <span><strong>${weekSessions.length}</strong></span>
+    </div>
+    <div class="stat-row">
+      <span>Tydzień – objętość</span>
+      <span><strong>${Math.round(weekVolume)} kg</strong></span>
+    </div>
+    <div class="stat-row">
+      <span>Tydzień – kcal (szac. / AW)</span>
+      <span class="kcal">${weekKcal} kcal</span>
+    </div>
+    <div class="stat-row">
+      <span>Miesiąc – ilość treningów</span>
+      <span><strong>${monthSessions.length}</strong></span>
+    </div>
+    <div class="stat-row">
+      <span>Miesiąc – objętość</span>
+      <span><strong>${Math.round(monthVolume)} kg</strong></span>
+    </div>
+    <div class="stat-row">
+      <span>Miesiąc – kcal (szac. / AW)</span>
+      <span class="kcal">${monthKcal} kcal</span>
+    </div>
+    <div class="stat-row">
+      <span>Ostatnia waga ciała</span>
+      <span><strong>${lastBw ? lastBw.toFixed(1)+' kg' : '-'}</strong></span>
+    </div>
+  </div>`;
+  statsWeekDiv.innerHTML = statsHtml;
+}
+
+// --- Wykresy (Chart.js) ---
+function updateCharts(){
+  const byDate = {};
+  sessions.forEach(s=>{
+    if(!byDate[s.date]) byDate[s.date] = {volume:0, bodyWeights:[]};
+    byDate[s.date].volume += s.totalVolume;
+    if(s.bodyWeight) byDate[s.date].bodyWeights.push(s.bodyWeight);
+  });
+  const dates = Object.keys(byDate).sort();
+  const volumes = dates.map(d=> Math.round(byDate[d].volume));
+  const weights = dates.map(d=>{
+    const arr = byDate[d].bodyWeights;
+    if(!arr.length) return null;
+    return arr.reduce((a,b)=>a+b,0)/arr.length;
+  });
+
+  const ctxVol = document.getElementById('chartVolume').getContext('2d');
+  const ctxBw = document.getElementById('chartWeight').getContext('2d');
+
+  if(chartVolume) chartVolume.destroy();
+  if(chartWeight) chartWeight.destroy();
+
+  chartVolume = new Chart(ctxVol, {
+    type: 'bar',
+    data: {
+      labels: dates,
+      datasets: [{
+        label: 'Objętość (kg)',
+        data: volumes
+      }]
+    },
+    options: {
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{x:{ticks:{autoSkip:true,maxTicksLimit:6}},y:{beginAtZero:true}}
+    }
+  });
+
+  chartWeight = new Chart(ctxBw, {
+    type: 'line',
+    data: {
+      labels: dates,
+      datasets: [{
+        label: 'Waga ciała (kg)',
+        data: weights
+      }]
+    },
+    options: {
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{x:{ticks:{autoSkip:true,maxTicksLimit:6}},y:{beginAtZero:false}}
+    }
+  });
+}
+
+// --- Edytor planów / własne treningi ---
+function renderPlanEditor(){
+  const id = planSelect.value;
+  const plan = plans[id];
+  if(!plan){
+    planEditorArea.innerHTML = '<div class="small">Brak planu.</div>';
+    return;
+  }
+  let html = `<div class="small" style="margin-bottom:4px;">
+    Nazwa planu: <input type="text" id="planLabelInput" class="input" style="width:60%;margin-top:4px" value="${plan.label}">
+  </div>`;
+  html += `<table style="width:100%;margin-top:6px">
+    <thead><tr><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Partia</th><th></th></tr></thead><tbody>`;
+  (plan.exercises || []).forEach((ex, idx)=>{
+    html += `<tr>
+      <td><input type="text" class="input ex-name" data-idx="${idx}" value="${ex.name}"></td>
+      <td><input type="number" class="input ex-sets" data-idx="${idx}" value="${ex.sets}" style="width:60px"></td>
+      <td><input type="text" class="input ex-reps" data-idx="${idx}" value="${ex.reps}" style="width:80px"></td>
+      <td><input type="text" class="input ex-muscle" data-idx="${idx}" value="${ex.muscle||''}" style="width:80px"></td>
+      <td><button class="btn-ghost btn-small remove-ex" data-idx="${idx}">X</button></td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+  planEditorArea.innerHTML = html;
+
+  elAll('.remove-ex').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = parseInt(btn.getAttribute('data-idx'));
+      plan.exercises.splice(idx,1);
+      savePlans();
+      renderPlanEditor();
+      renderPlan(sessionType.value);
+    });
+  });
+}
+
+el('#newPlanBtn').addEventListener('click', ()=>{
+  const name = prompt('Nazwa nowego planu (np. Push, Full Body itp.):','Nowy plan');
+  if(!name) return;
+  const id = 'CUST_'+Date.now();
+  plans[id] = {
+    id,
+    label: name,
+    warmup: '10 min dowolne cardio - rozgrzewka',
+    exercises: []
+  };
+  savePlans();
+  refreshPlanSelects();
+  planSelect.value = id;
+  sessionType.value = id;
+  renderPlanEditor();
+  renderPlan(sessionType.value);
+});
+
+planSelect.addEventListener('change', ()=>{
+  renderPlanEditor();
+  sessionType.value = planSelect.value;
+  renderPlan(sessionType.value);
+});
+
+el('#addExerciseBtn').addEventListener('click', ()=>{
+  const id = planSelect.value;
+  const plan = plans[id];
+  if(!plan) return;
+  plan.exercises.push({
+    name:'Nowe ćwiczenie',
+    sets:3,
+    reps:'8-12',
+    muscle:''
+  });
+  savePlans();
+  renderPlanEditor();
+  renderPlan(sessionType.value);
+});
+
+el('#savePlanBtn').addEventListener('click', ()=>{
+  const id = planSelect.value;
+  const plan = plans[id];
+  if(!plan) return;
+  const labelInput = el('#planLabelInput');
+  if(labelInput) plan.label = labelInput.value || plan.label;
+
+  const names = elAll('.ex-name');
+  const sets = elAll('.ex-sets');
+  const reps = elAll('.ex-reps');
+  const muscles = elAll('.ex-muscle');
+
+  const newEx = [];
+  for(let i=0;i<names.length;i++){
+    const n = names[i].value.trim();
+    if(!n) continue;
+    const s = parseInt(sets[i].value)||1;
+    const r = reps[i].value.trim() || '8-12';
+    const m = muscles[i].value.trim();
+    newEx.push({name:n, sets:s, reps:r, muscle:m});
+  }
+  plan.exercises = newEx;
+  savePlans();
+  refreshPlanSelects();
+  sessionType.value = id;
+  alert('Plan zapisany ✅');
+  renderPlan(sessionType.value);
+});
+
+// --- Zdarzenia na zmianę typu i daty / zapis ---
+sessionType.addEventListener('change', ()=>{
+  renderPlan(sessionType.value);
+});
+sessionDate.addEventListener('change', ()=>{
+  renderCalendarAndStats();
+});
+saveBtn.addEventListener('click', saveSession);
+
+// --- Start: inicjalizacja ---
+(function init(){
+  plans = loadPlans();
+  sessions = loadSessions();
+
+  sessionDate.valueAsDate = new Date();
+  refreshPlanSelects();
+  if(sessionType.options.length) sessionType.value = sessionType.options[0].value;
+  if(planSelect.options.length) planSelect.value = planSelect.options[0].value;
+
+  renderPlan(sessionType.value);
+  renderPlanEditor();
+  renderHistory();
+  renderCalendarAndStats();
+  updateCharts();
+})();
+</script>
+</body>
+</html>
