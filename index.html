@@ -173,6 +173,96 @@ canvas {
     width: 100%;
   }
 }
+/* ==== FIX NA iOS (brak dziwnego zoomu przy focuse) ==== */
+/* iOS zaczyna zoomować gdy font-size w inputach < 16px */
+@media (max-width: 768px) {
+  .input,
+  select,
+  button,
+  textarea {
+    font-size: 16px; /* było 14px */
+  }
+}
+
+/* dodatkowo tylko dla Safari / iOS */
+@supports (-webkit-touch-callout: none) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* ==== OGÓLNE: brak poziomego scrolla całej strony ==== */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* ==== HEADER / GÓRNY PANEL ==== */
+@media (max-width: 768px) {
+
+  /* header w kolumnie, nie na siłę w jednym rzędzie */
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .controls {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;      /* elementy w jednej linii */
+    overflow-x: auto;       /* ale przewijane w bok */
+    padding-bottom: 4px;
+  }
+
+  .controls > * {
+    flex: 0 0 auto;         /* nie ściskaj, nie zawijaj */
+    margin-right: 6px;
+  }
+
+  .actions {
+    margin-left: 0;
+  }
+}
+
+/* ==== KALENDARZ – przewijany osobno w bok ==== */
+#calendarWeek {
+  overflow-x: auto;
+}
+
+/* cała siatka tygodnia ma stałą szerokość, więc przewijasz tylko ją */
+#calendarWeek .week-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(70px, 1fr);
+  width: max-content;   /* szerokość wg zawartości */
+}
+
+/* ==== TABELKI – przewijane w środku karty ==== */
+.card table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* ==== Historia – żeby nie rozpychała szerokości ==== */
+.history-item {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.history-buttons {
+  margin-top: 4px;
+}
+
+/* ==== Canvas / wykresy – niech nie wychodzą poza ekran ==== */
+canvas {
+  max-width: 100%;
+  height: auto;
+}
 
 </style>
 </head>
