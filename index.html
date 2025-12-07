@@ -106,6 +106,74 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     max-height:260px;
   }
 }
+  /* ==== MOBILE FIX / ANTY-ROZJEŻDŻANIE EKRANU ==== */
+
+/* Blokada poziomego scrolla na całej stronie */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Upewniamy się, że główne elementy nie wychodzą poza ekran */
+.container,
+header,
+.card,
+table {
+  max-width: 100%;
+}
+
+/* Historia – przy małym ekranie zawartość + przyciski niech się łamią w dół */
+.history-item {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Przyciski historii pod tekstem zamiast wciskać się w jedną linię */
+.history-buttons {
+  margin-top: 4px;
+}
+
+/* Tabele na telefonie – pozwalamy przewijać je w poziomie wewnątrz karty,
+   zamiast rozszerzać całą stronę */
+table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Canvas / wykresy niech szanują szerokość ekranu */
+canvas {
+  max-width: 100%;
+}
+
+/* Dodatkowe poprawki wyłącznie dla telefonów */
+@media (max-width: 768px) {
+
+  /* Panel w headerze – niech zajmuje pełną szerokość i ładnie się łamie */
+  .controls {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .controls > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  /* Żeby przyciski nie pchały nic w bok */
+  .actions {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* Karty też na 100% szerokości */
+  .card {
+    width: 100%;
+  }
+}
+
 </style>
 </head>
 <body data-theme="light">
