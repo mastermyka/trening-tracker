@@ -316,22 +316,27 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     overflow:visible;
   }
 
-    .week-grid{
-    display:flex;                 /* zamiast grid */
-    gap:6px;
-    margin-top:6px;
-    font-size:11px;
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-  }
+  /* KALENDARZ – poziomy scroll 100% pewny */
+.week-grid{
+  display:flex !important;          /* eliminuje grid, flex jest przewijalny */
+  flex-wrap:nowrap !important;      /* NIE łamiemy kafelków */
+  overflow-x:auto !important;       /* wymuszamy przewijanie */
+  overflow-y:hidden !important;
+  -webkit-overflow-scrolling:touch; /* iPhone inertial scroll */
+  gap:6px;
+  margin-top:6px;
+  font-size:11px;
+  white-space:nowrap;               /* zabezpieczenie przed łamaniem */
+}
 
-  .week-day{
-    min-height:auto;
-    padding:6px;
-    white-space:normal;
-    min-width:110px;              /* każdy dzień ma stałą szerokość */
-    flex:0 0 auto;                /* nie zwija się, jest scroll */
-  }
+.week-day{
+  flex:0 0 120px !important;        /* KAŻDY dzień = SZTYWNE 120px */
+  min-width:120px !important;       /* nie pozwalamy zwężać */
+  background:rgba(11,18,38,0.02);
+  border-radius:8px;
+  padding:6px;
+}
+
 
 
   #chartVolume,
