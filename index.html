@@ -195,17 +195,20 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     max-height:220px;
   }
 
+  /* SEKCJA ĆWICZEŃ – pionowo: S1, ciężar, powt., checkbox z prawej */
   .exercise-table{
     width:100%;
+    border-collapse:collapse;
   }
   .exercise-table thead{
     display:none;
   }
   .exercise-table tr{
     display:grid;
-    grid-template-columns:1fr 1fr;
-    grid-template-rows:auto auto;
-    gap:4px;
+    grid-template-columns:1fr auto;  /* lewa kolumna: tekst + inputy, prawa: checkbox */
+    grid-template-rows:auto auto auto;
+    align-items:center;
+    gap:2px 4px;
     padding:4px 0;
   }
   .exercise-table td{
@@ -213,21 +216,21 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     padding:2px 4px;
   }
   .exercise-table td[data-label="Seria"]{
-    grid-column:1/2;
+    grid-column:1;
     grid-row:1;
     font-weight:600;
   }
   .exercise-table td[data-label="Ciężar"]{
-    grid-column:2/3;
-    grid-row:1;
+    grid-column:1;
+    grid-row:2;
   }
   .exercise-table td[data-label="Powt."]{
-    grid-column:1/2;
-    grid-row:2;
+    grid-column:1;
+    grid-row:3;
   }
   .exercise-table td[data-label="Odhacz"]{
-    grid-column:2/3;
-    grid-row:2;
+    grid-column:2;
+    grid-row:1 / 4; /* od góry do dołu */
     display:flex;
     justify-content:flex-end;
     align-items:center;
@@ -1174,7 +1177,6 @@ function initMobileSections(){
   const buttons = document.querySelectorAll('.mobile-nav-btn');
   if (!sections.length || !buttons.length) return;
 
-  // domyślnie pokazujemy trening
   sections.forEach(sec=>{
     sec.classList.toggle('active', sec.dataset.section === 'workout');
   });
