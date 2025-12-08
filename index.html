@@ -83,6 +83,7 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
   body{
     margin:6px;
     font-size:14px;
+    overflow-x:hidden; /* dla bezpieczeństwa – nic nie wystaje poza ekran */
   }
 
   header{
@@ -91,7 +92,7 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     z-index:40;
     padding:6px 4px;
     background:var(--bg);
-    flex-direction:column;          /* nagłówek pod sobą */
+    flex-direction:column;
     align-items:flex-start;
     gap:6px;
   }
@@ -112,7 +113,13 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     font-size:13px;
   }
 
-  /* Górne kontrolki – wszystko w jednej kolumnie */
+  .workout-title{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:4px;
+  }
+
+  /* GÓRNE KONTROLKI – pełna szerokość, jedna pod drugą */
   .controls{
     width:100%;
     gap:6px;
@@ -157,8 +164,20 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     border-radius:12px;
   }
 
+  .row{
+    width:100%;
+  }
+
+  /* wiersze z inputami (Apple Watch, Timer itp.) – 2 kolumny, nic nie wystaje */
+  .row > input,
+  .row > select,
+  .row > button{
+    flex:1 1 calc(50% - 6px);
+    width:100% !important;
+  }
+
   .series-input{
-    width:70px;
+    width:100%;
     padding:6px;
     font-size:14px;
   }
@@ -172,7 +191,52 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     max-height:220px;
   }
 
-  /* Kalendarz – przewijany w poziomie */
+  /* --- SERIE ĆWICZEŃ: rozbij na 2–3 linie zamiast szerokiego wiersza --- */
+  #workoutArea table{
+    width:100%;
+    border-collapse:separate;
+  }
+
+  /* chowamy nagłówki tabel w części z seriami */
+  #workoutArea table thead{
+    display:none;
+  }
+
+  /* każdy wiersz serii to mała “karta” w gridzie 2 kolumny */
+  #workoutArea .set-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-areas:
+      "serie serie"
+      "weight reps"
+      "check check";
+    row-gap:4px;
+    padding:4px 0;
+  }
+
+  #workoutArea .set-row td{
+    border-bottom:none;
+    padding:2px 4px;
+  }
+
+  #workoutArea .set-row td:nth-child(1){ /* Seria */
+    grid-area:serie;
+    font-weight:600;
+  }
+  #workoutArea .set-row td:nth-child(2){ /* Ciężar */
+    grid-area:weight;
+  }
+  #workoutArea .set-row td:nth-child(3){ /* Powt. */
+    grid-area:reps;
+  }
+  #workoutArea .set-row td:nth-child(4){ /* Odhacz */
+    grid-area:check;
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+  }
+
+  /* KALENDARZ – przewijany w poziomie */
   .week-grid{
     display:grid;
     grid-auto-flow:column;
@@ -202,6 +266,7 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
   }
 }
 </style>
+
 </head>
 <body data-theme="light">
 <header>
