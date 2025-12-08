@@ -42,6 +42,7 @@ textarea{resize:none}
 .small{font-size:12px;color:var(--muted)}
 .container{display:grid;grid-template-columns:1fr 420px;gap:12px;align-items:start}
 .card{background:var(--card);border-radius:14px;padding:12px;box-shadow:0 6px 18px rgba(2,6,23,0.06);}
+.card.exercise-active{box-shadow:0 0 0 2px rgba(43,138,239,0.35);}
 .workout-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 table{width:100%;border-collapse:collapse}
 th,td{padding:6px;border-bottom:1px solid rgba(11,18,38,0.06);font-size:14px}
@@ -74,7 +75,7 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:999px;font-size:11px}
 .badge-dot{width:8px;height:8px;border-radius:999px;background:var(--accent);}
 .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:6px;font-size:11px}
-.week-day{padding:6px;border-radius:8px;background:rgba(11,18,38,0.02);min-height:60px}
+.week-day{padding:6px;border-radius:8px;background:rgba(11,18,38,0.02);min-height:60px;cursor:pointer;}
 .week-day strong{font-size:11px;display:block;margin-bottom:2px}
 .week-day span{display:block}
 .tag{display:inline-block;padding:2px 6px;border-radius:999px;font-size:10px;background:rgba(11,18,38,0.04);margin-top:2px}
@@ -196,54 +197,54 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
   }
 
   /* Ćwiczenia – poziom: S1 | ciężar | powt. | checkbox */
-.exercise-table{
-  width:100%;
-  border-collapse:collapse;
-}
-.exercise-table thead{
-  display:none; /* bez nagłówka na mobile */
-}
-.exercise-table tr{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  padding:4px 0;
-}
-.exercise-table td{
-  border:none;
-  padding:0 2px;
-}
+  .exercise-table{
+    width:100%;
+    border-collapse:collapse;
+  }
+  .exercise-table thead{
+    display:none; /* bez nagłówka na mobile */
+  }
+  .exercise-table tr{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 0;
+  }
+  .exercise-table td{
+    border:none;
+    padding:0 2px;
+  }
 
-/* S1 / S2 / S3 – wąska kolumna */
-.exercise-table td[data-label="Seria"]{
-  width:32px;
-  font-weight:600;
-}
+  /* S1 / S2 / S3 – wąska kolumna */
+  .exercise-table td[data-label="Seria"]{
+    width:32px;
+    font-weight:600;
+  }
 
-/* Ciężar i powtórzenia dzielą miejsce po środku */
-.exercise-table td[data-label="Ciężar"],
-.exercise-table td[data-label="Powt."]{
-  flex:1;
-}
+  /* Ciężar i powtórzenia dzielą miejsce po środku */
+  .exercise-table td[data-label="Ciężar"],
+  .exercise-table td[data-label="Powt."]{
+    flex:1;
+  }
 
-/* Checkbox po prawej stronie */
-.exercise-table td[data-label="Odhacz"]{
-  width:32px;
-  display:flex;
-  justify-content:flex-end;
-  align-items:center;
-}
+  /* Checkbox po prawej stronie */
+  .exercise-table td[data-label="Odhacz"]{
+    width:32px;
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+  }
 
-/* Małe etykiety nad polami (opcjonalnie) */
-.exercise-table td[data-label="Ciężar"]::before,
-.exercise-table td[data-label="Powt."]::before{
-  display:block;
-  font-size:10px;
-  color:var(--muted);
-  margin-bottom:2px;
-}
-.exercise-table td[data-label="Ciężar"]::before{ content:"Ciężar (kg)"; }
-.exercise-table td[data-label="Powt."]::before{ content:"Powt."; }
+  /* Małe etykiety nad polami (opcjonalnie) */
+  .exercise-table td[data-label="Ciężar"]::before,
+  .exercise-table td[data-label="Powt."]::before{
+    display:block;
+    font-size:10px;
+    color:var(--muted);
+    margin-bottom:2px;
+  }
+  .exercise-table td[data-label="Ciężar"]::before{ content:"Ciężar (kg)"; }
+  .exercise-table td[data-label="Powt."]::before{ content:"Powt."; }
 
 
   /* --- EDYTOR PLANÓW – kompaktowy układ 2 linie --- */
@@ -327,8 +328,6 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     background:rgba(11,18,38,0.02);
     border-radius:8px;
   }
-
-
 
   #chartVolume,
   #chartWeight{
@@ -461,7 +460,13 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
         <button id="loadLastBtn" class="btn-ghost btn-small">Otwórz ostatnią</button>
       </div>
       <div id="history" class="history-list"><div class="small">Brak zapisanych sesji.</div></div>
-      <div class="footer small">Dane zapisane lokalnie (localStorage). Możesz w każdej chwili zrobić backup przez skopiowanie danych z konsoli.</div>
+
+      <div class="history-backup-buttons" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">
+        <button id="exportDataBtn" class="btn-ghost btn-small">Eksport JSON</button>
+        <button id="importDataBtn" class="btn-ghost btn-small">Import JSON</button>
+      </div>
+
+      <div class="footer small">Dane zapisane lokalnie (localStorage). Eksportuj JSON, żeby mieć backup.</div>
     </div>
 
     <!-- WYKRESY -->
@@ -551,6 +556,8 @@ const planEditorArea = el('#planEditorArea');
 const calendarWeekDiv = el('#calendarWeek');
 const statsWeekDiv = el('#statsWeek');
 const loadLastBtn = el('#loadLastBtn');
+const exportDataBtn = el('#exportDataBtn');
+const importDataBtn = el('#importDataBtn');
 const alarmAudio = document.getElementById('alarmAudio');
 
 let timerInterval = null;
@@ -664,14 +671,25 @@ function renderPlan(typeId){
 
   attachSeriesEvents();
   applyLastSessionProgression(typeId);
+  updateProgress();
 }
 
-// --- Kolorowanie serii i progress bar ---
+// --- Kolorowanie serii, aktywne ćwiczenie i progress bar ---
 function attachSeriesEvents(){
   elAll('.checkbox').forEach(cb=>{
     cb.addEventListener('change', ()=>{
-      updateProgress();
       updateSetRowStyle(cb);
+      updateProgress();
+
+      // auto-focus na kolejną serię
+      if(cb.checked){
+        const ex = cb.getAttribute('data-ex');
+        const set = parseInt(cb.getAttribute('data-set'),10);
+        const nextInput = el(`input.weight-input[data-ex="${ex}"][data-set="${set+1}"]`);
+        if(nextInput){
+          nextInput.focus();
+        }
+      }
     });
   });
 }
@@ -683,6 +701,12 @@ function updateSetRowStyle(cb){
     row.classList.remove('set-row-partial');
   }else{
     row.classList.remove('set-row-done');
+  }
+  // podświetlenie całej karty ćwiczenia
+  const wrapper = cb.closest('.card');
+  if(wrapper){
+    const anyChecked = wrapper.querySelectorAll('input.checkbox:checked').length>0;
+    wrapper.classList.toggle('exercise-active', anyChecked);
   }
 }
 function updateProgress(){
@@ -861,6 +885,10 @@ function saveSession(){
   renderHistory();
   renderCalendarAndStats();
   updateCharts();
+
+  // OPCJA B — po zapisaniu przeładuj plan (czyste serie, nowa progresja)
+  renderPlan(sessionType.value);
+
   alert('Sesja zapisana (Premium 4.3 ✅)');
 }
 
@@ -994,7 +1022,7 @@ function getWeekRange(baseDateStr){
 }
 
 function renderCalendarAndStats(){
-  const baseDateStr = sessionDate.value || formatLocalDate(new Date());
+  const baseDateStr = sessionDate.value || formatLocalDate(new Date()));
   const {monday, sunday} = getWeekRange(baseDateStr);
 
   let html = '<div class="badge"><span class="badge-dot"></span><span>Bieżący tydzień</span></div>';
@@ -1008,7 +1036,10 @@ function renderCalendarAndStats(){
     const totalVol = daySessions.reduce((acc,s)=>acc+s.totalVolume,0);
     const intensityClass = totalVol===0 ? '' : (totalVol<2000?'yellow':'green');
 
-    html += `<div class="week-day">
+    const dayBwSessions = sessions.filter(s=>s.date===dStr && s.bodyWeight);
+    const lastDayBw = dayBwSessions.length ? dayBwSessions[dayBwSessions.length-1].bodyWeight : null;
+
+    html += `<div class="week-day" data-date="${dStr}">
       <strong>${dayName}</strong>
       <span>${dStr.slice(5)}</span>`;
     if(!daySessions.length){
@@ -1021,10 +1052,24 @@ function renderCalendarAndStats(){
         html += `<div class="small ${intensityClass}">Objętość: ${Math.round(totalVol)} kg</div>`;
       }
     }
+    if(lastDayBw !== null){
+      html += `<span class="tag">Waga: ${lastDayBw.toFixed(1)} kg</span>`;
+    }
     html += `</div>`;
   }
   html += '</div>';
   calendarWeekDiv.innerHTML = html;
+
+  // kliknięcie w dzień ustawia datę i przeładowuje tydzień
+  elAll('.week-day').forEach(dayEl=>{
+    const dateStr = dayEl.getAttribute('data-date');
+    dayEl.addEventListener('click', ()=>{
+      if(dateStr){
+        sessionDate.value = dateStr;
+        renderCalendarAndStats();
+      }
+    });
+  });
 
   const weekSessions = sessions.filter(s=>{
     const d = parseDate(s.date);
@@ -1038,14 +1083,15 @@ function renderCalendarAndStats(){
     const d = parseDate(s.date);
     return d.getFullYear()===year && d.getMonth()===month;
   });
-// --- Roczne statystyki ---
-const yearSessionsAll = sessions.filter(s=>{
-  const d = parseDate(s.date);
-  return d.getFullYear() === year;
-});
 
-const yearVolume = yearSessionsAll.reduce((acc, s) => acc + s.totalVolume, 0);
-const yearKcal   = yearSessionsAll.reduce((acc, s) => acc + (s.kcal || 0), 0);
+  // --- Roczne statystyki ---
+  const yearSessionsAll = sessions.filter(s=>{
+    const d = parseDate(s.date);
+    return d.getFullYear() === year;
+  });
+
+  const yearVolume = yearSessionsAll.reduce((acc, s) => acc + s.totalVolume, 0);
+  const yearKcal   = yearSessionsAll.reduce((acc, s) => acc + (s.kcal || 0), 0);
 
   const weekVolume = weekSessions.reduce((acc,s)=>acc+s.totalVolume,0);
   const weekKcal = weekSessions.reduce((acc,s)=>acc+(s.kcal||0),0);
@@ -1093,7 +1139,7 @@ const yearKcal   = yearSessionsAll.reduce((acc, s) => acc + (s.kcal || 0), 0);
       <span>Rok – kcal</span>
       <span class="kcal">${yearKcal} kcal</span>
     </div>
-<div class="stat-row">
+    <div class="stat-row">
       <span>Ostatnia waga ciała</span>
       <span><strong>${lastBw ? lastBw.toFixed(1)+' kg' : '-'}</strong></span>
     </div>
@@ -1259,6 +1305,39 @@ el('#savePlanBtn').addEventListener('click', ()=>{
   alert('Plan zapisany ✅');
   renderPlan(sessionType.value);
 });
+
+// --- EXPORT / IMPORT JSON ---
+if(exportDataBtn){
+  exportDataBtn.addEventListener('click', ()=>{
+    const payload = {plans, sessions};
+    const txt = JSON.stringify(payload);
+    prompt('Skopiuj ten tekst i zapisz jako backup:', txt);
+  });
+}
+if(importDataBtn){
+  importDataBtn.addEventListener('click', ()=>{
+    const txt = prompt('Wklej tutaj JSON z backupu:');
+    if(!txt) return;
+    try{
+      const data = JSON.parse(txt);
+      if(data.plans) plans = data.plans;
+      if(data.sessions) sessions = data.sessions;
+      savePlans();
+      saveSessions();
+      refreshPlanSelects();
+      if(sessionType.options.length) sessionType.value = sessionType.options[0].value;
+      if(planSelect.options.length) planSelect.value = planSelect.options[0].value;
+      renderPlan(sessionType.value);
+      renderPlanEditor();
+      renderHistory();
+      renderCalendarAndStats();
+      updateCharts();
+      alert('Backup zaimportowany ✅');
+    }catch(e){
+      alert('Błąd importu JSON. Sprawdź, czy wkleiłeś poprawny tekst.');
+    }
+  });
+}
 
 // --- MOBILE SEKCJE / NAV ---
 function initMobileSections(){
