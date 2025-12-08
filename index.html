@@ -550,16 +550,92 @@ const defaultPlans = {
 };
 // --- Domyślna baza ćwiczeń ---
 const defaultExercises = [
-  { id:"bench_flat",   name:"Wyciskanie na ławce płaskiej", muscle:"klatka" },
-  { id:"row_bb",       name:"Wiosłowanie w opadzie",        muscle:"plecy" },
-  { id:"hip_thrust",   name:"Hip thrust",                   muscle:"pośladki" },
-  { id:"leg_ext",      name:"Prostowanie nóg",              muscle:"czworogłowe" },
-  { id:"leg_curl",     name:"Uginanie nóg",                 muscle:"dwugłowe" },
-  { id:"lat_pulldown", name:"Ściąganie drążka do klatki",   muscle:"plecy" },
-  { id:"ohp_db",       name:"Wyciskanie nad głowę hantlami",muscle:"barki" },
-  { id:"step_up",      name:"Step-up",                      muscle:"nogi" },
-  { id:"rdl",          name:"Martwy ciąg rumuński",         muscle:"dwugłowe" }
+  // KLATKA
+  { id:"bench_flat",        name:"Wyciskanie sztangi na ławce płaskiej",          muscle:"klatka" },
+  { id:"bench_incline_bb",  name:"Wyciskanie sztangi na skosie dodatnim",        muscle:"klatka" },
+  { id:"bench_incline_db",  name:"Wyciskanie hantli na skosie dodatnim",         muscle:"klatka" },
+  { id:"bench_decline_bb",  name:"Wyciskanie sztangi na skosie ujemnym",         muscle:"klatka" },
+  { id:"bench_db_flat",     name:"Wyciskanie hantli na ławce płaskiej",          muscle:"klatka" },
+  { id:"fly_db_flat",       name:"Rozpiętki hantlami na ławce płaskiej",         muscle:"klatka" },
+  { id:"fly_db_incline",    name:"Rozpiętki hantlami na skosie dodatnim",        muscle:"klatka" },
+  { id:"cable_fly_high",    name:"Ściąganie linek wyciągu górą (cable fly)",     muscle:"klatka" },
+  { id:"cable_fly_low",     name:"Ściąganie linek wyciągu do góry (cable fly)",  muscle:"klatka" },
+  { id:"pushups",           name:"Pompki klasyczne",                             muscle:"klatka" },
+  { id:"pushups_incline",   name:"Pompki na podwyższeniu",                       muscle:"klatka" },
+  { id:"dips_chest",        name:"Pompki na poręczach (klatka)",                 muscle:"klatka" },
+
+  // PLECY
+  { id:"row_bb",            name:"Wiosłowanie sztangą w opadzie",                muscle:"plecy" },
+  { id:"row_db",            name:"Wiosłowanie hantlą w podporze",                muscle:"plecy" },
+  { id:"row_cable_low",     name:"Wiosłowanie siedząc dolnym wyciągiem",         muscle:"plecy" },
+  { id:"row_machine",       name:"Wiosłowanie na maszynie",                      muscle:"plecy" },
+  { id:"lat_pulldown_chest",name:"Ściąganie drążka do klatki",                   muscle:"plecy" },
+  { id:"lat_pulldown_neck", name:"Ściąganie drążka za kark",                     muscle:"plecy" },
+  { id:"pullups",           name:"Podciąganie nachwytem",                        muscle:"plecy" },
+  { id:"chinups",           name:"Podciąganie podchwytem",                       muscle:"plecy" },
+  { id:"pullover_db",       name:"Pullover hantlą",                              muscle:"plecy" },
+  { id:"pullover_cable",    name:"Ściąganie drążka prostymi ramionami",          muscle:"plecy" },
+
+  // NOGI / POŚLADKI
+  { id:"squat_bb_highbar",  name:"Przysiad ze sztangą (high bar)",               muscle:"nogi" },
+  { id:"squat_bb_lowbar",   name:"Przysiad ze sztangą (low bar)",                muscle:"nogi" },
+  { id:"front_squat",       name:"Przysiad przedni",                             muscle:"nogi" },
+  { id:"goblet_squat",      name:"Goblet squat",                                 muscle:"nogi" },
+  { id:"leg_press",         name:"Wyciskanie nogami na suwnicy",                 muscle:"nogi" },
+  { id:"lunge_forward",     name:"Wykroki chodzone",                             muscle:"nogi" },
+  { id:"lunge_reverse",     name:"Wykroki w tył",                                muscle:"nogi" },
+  { id:"bulgarian_split",   name:"Bułgarskie przysiady",                         muscle:"nogi" },
+  { id:"step_up",           name:"Step-up na podwyższenie",                      muscle:"nogi" },
+  { id:"rdl",               name:"Martwy ciąg rumuński",                         muscle:"dwugłowe" },
+  { id:"stiff_leg_deadlift",name:"Martwy ciąg na prostych nogach",               muscle:"dwugłowe" },
+  { id:"leg_ext",           name:"Prostowanie nóg na maszynie",                  muscle:"czworogłowe" },
+  { id:"leg_curl_seated",   name:"Uginanie nóg siedząc",                         muscle:"dwugłowe" },
+  { id:"leg_curl_lying",    name:"Uginanie nóg leżąc",                           muscle:"dwugłowe" },
+  { id:"hip_thrust",        name:"Hip thrust ze sztangą",                        muscle:"pośladki" },
+  { id:"glute_bridge",      name:"Glute bridge",                                 muscle:"pośladki" },
+  { id:"kickback_cable",    name:"Odwodzenie nogi na linkach (kickback)",        muscle:"pośladki" },
+  { id:"abduction_machine", name:"Odwodzenie nóg na maszynie",                   muscle:"pośladki" },
+  { id:"adduction_machine", name:"Przywodzenie nóg na maszynie",                 muscle:"przywodziciele" },
+  { id:"calf_raise_standing", name:"Wspięcia na palce stojąc",                   muscle:"łydki" },
+  { id:"calf_raise_seated",   name:"Wspięcia na palce siedząc",                  muscle:"łydki" },
+
+  // BARKI
+  { id:"ohp_bb",            name:"Wyciskanie sztangi nad głowę (OHP)",           muscle:"barki" },
+  { id:"ohp_db",            name:"Wyciskanie hantli nad głowę",                  muscle:"barki" },
+  { id:"arnold_press",      name:"Arnold press",                                 muscle:"barki" },
+  { id:"lateral_raise_db",  name:"Unoszenie hantli bokiem",                      muscle:"barki" },
+  { id:"lateral_raise_cable",name:"Unoszenie ramion bokiem na wyciągu",         muscle:"barki" },
+  { id:"front_raise_db",    name:"Unoszenie hantli w przód",                     muscle:"barki" },
+  { id:"rear_delt_fly",     name:"Odwodzenie w opadzie (tylne aktony)",          muscle:"barki" },
+  { id:"facepull",          name:"Face pull",                                    muscle:"barki" },
+  { id:"upright_row_bb",    name:"Wiosłowanie pionowe",                          muscle:"barki" },
+
+  // BICEPS
+  { id:"curl_bb",           name:"Uginanie ramion ze sztangą stojąc",            muscle:"biceps" },
+  { id:"curl_db_alt",       name:"Uginanie ramion z hantlami naprzemienne",      muscle:"biceps" },
+  { id:"curl_incline_db",   name:"Uginanie hantli na ławce skośnej",             muscle:"biceps" },
+  { id:"curl_hammer",       name:"Uginanie młotkowe",                            muscle:"biceps" },
+  { id:"curl_cable",        name:"Uginanie na wyciągu dolnym",                   muscle:"biceps" },
+  { id:"preacher_curl",     name:"Uginanie na modlitewniku",                     muscle:"biceps" },
+
+  // TRICEPS
+  { id:"cgbp",              name:"Wyciskanie wąsko ze sztangą",                  muscle:"triceps" },
+  { id:"dip_triceps",       name:"Pompki na poręczach (triceps)",                muscle:"triceps" },
+  { id:"pushdown_cable",    name:"Prostowanie ramion na wyciągu (pushdown)",     muscle:"triceps" },
+  { id:"oh_ext_db",         name:"Prostowanie hantli nad głową",                 muscle:"triceps" },
+  { id:"oh_ext_cable",      name:"Prostowanie ramion nad głową na wyciągu",      muscle:"triceps" },
+  { id:"kickback_db",       name:"Kickback hantlą",                              muscle:"triceps" },
+
+  // BRZUCH / CORE
+  { id:"crunch_floor",      name:"Spięcia brzucha na podłodze",                  muscle:"brzuch" },
+  { id:"crunch_machine",    name:"Ściąganie linki na brzuch klęcząc",            muscle:"brzuch" },
+  { id:"leg_raise_hang",    name:"Unoszenie nóg w zwisie",                       muscle:"brzuch" },
+  { id:"leg_raise_lying",   name:"Unoszenie nóg leżąc",                          muscle:"brzuch" },
+  { id:"plank",             name:"Deska (plank)",                                muscle:"core" },
+  { id:"side_plank",        name:"Deska bokiem",                                 muscle:"core" },
+  { id:"russian_twist",     name:"Russian twist",                                muscle:"brzuch" }
 ];
+
 
 // --- Baza ćwiczeń (localStorage) ---
 function loadExercises(){
