@@ -1157,25 +1157,20 @@ function updateCharts(){
   });
 }
 function resetAfterSave(){
-  // 1) odznacz wszystkie serie
-  elAll('.checkbox').forEach(cb=>{
-    cb.checked = false;
-    updateSetRowStyle(cb);
-  });
-  updateProgress();
+  // 1) przeładowanie planu – dokładnie jak po odświeżeniu strony
+  renderPlan(sessionType.value);
 
-  // 2) wyczyść dane sesji (jak po odświeżeniu)
-  ['#sessionKcal','#avgHr','#maxHr','#durationMin','#bodyWeight'].forEach(sel=>{
+  // 2) wyczyszczenie danych sesji
+  ['#sessionKcal', '#avgHr', '#maxHr', '#durationMin', '#bodyWeight', '#restTime'].forEach(sel=>{
     const input = el(sel);
     if(input) input.value = '';
   });
 
-  // 3) wyzeruj timer + pole przerwy
+  // 3) wyzerowanie timera
   clearInterval(timerInterval);
   timerDisplay.textContent = '0s';
-  const restInput = el('#restTime');
-  if(restInput) restInput.value = '';
 }
+
 
 // --- Edytor planów ---
 function renderPlanEditor(){
