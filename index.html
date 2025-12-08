@@ -437,9 +437,19 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
           <button id="newPlanBtn" class="btn-ghost btn-small">Nowy plan</button>
         </div>
         <div id="planEditorArea" class="small" style="margin-top:8px"></div>
-        <button id="addExerciseBtn" class="btn-ghost btn-small" style="margin-top:6px">Dodaj ćwiczenie</button>
-        <button id="savePlanBtn" class="btn-primary" style="margin-top:8px;width:100%">Zapisz plan</button>
-      </div>
+<button id="addExerciseBtn" class="btn-ghost btn-small" style="margin-top:6px">Dodaj ćwiczenie</button>
+<button id="savePlanBtn" class="btn-primary" style="margin-top:8px;width:100%">Zapisz plan</button>
+
+<!-- PANEL BAZY ĆWICZEŃ -->
+<div id="exerciseDbPanel" class="small" style="margin-top:10px;border-top:1px solid rgba(11,18,38,0.06);padding-top:8px">
+  <div class="section-title" style="margin-bottom:4px;">Baza ćwiczeń</div>
+  <div class="row" style="margin-bottom:6px">
+    <input id="exDbName"   class="input" placeholder="Nazwa ćwiczenia" style="flex:2">
+    <input id="exDbMuscle" class="input" placeholder="Partia (np. klatka)" style="flex:1">
+    <button id="exDbAddBtn" class="btn-primary btn-small" style="white-space:nowrap">Dodaj do bazy</button>
+  </div>
+  <div id="exDbList" class="small"></div>
+</div>
     </div>
   </div>
 
@@ -540,19 +550,31 @@ const defaultPlans = {
 };
 // --- Domyślna baza ćwiczeń ---
 const defaultExercises = [
-  { id:"bench_flat",      name:"Wyciskanie na ławce płaskiej", muscle:"klatka" },
-  { id:"row_bb",          name:"Wiosłowanie w opadzie", muscle:"plecy" },
-  { id:"hip_thrust",      name:"Hip thrust", muscle:"pośladki" },
-  { id:"leg_ext",         name:"Prostowanie nóg", muscle:"czworogłowe" },
-  { id:"leg_curl",        name:"Uginanie nóg", muscle:"dwugłowe" },
-  { id:"lat_pulldown",    name:"Ściąganie drążka do klatki", muscle:"plecy" },
-  { id:"ohp_db",          name:"Wyciskanie nad głowę hantlami", muscle:"barki" },
-  { id:"step_up",         name:"Step-up", muscle:"nogi" },
-  { id:"rdl",             name:"Martwy ciąg rumuński", muscle:"dwugłowe" },
-  { id:"incline_db",      name:"Wyciskanie hantli na skosie", muscle:"klatka" },
-  { id:"fly",             name:"Rozpiętki / guma fly", muscle:"klatka" },
-  { id:"row_low",         name:"Wiosłowanie dolnym wyciągiem", muscle:"plecy" }
+  { id:"bench_flat",   name:"Wyciskanie na ławce płaskiej", muscle:"klatka" },
+  { id:"row_bb",       name:"Wiosłowanie w opadzie",        muscle:"plecy" },
+  { id:"hip_thrust",   name:"Hip thrust",                   muscle:"pośladki" },
+  { id:"leg_ext",      name:"Prostowanie nóg",              muscle:"czworogłowe" },
+  { id:"leg_curl",     name:"Uginanie nóg",                 muscle:"dwugłowe" },
+  { id:"lat_pulldown", name:"Ściąganie drążka do klatki",   muscle:"plecy" },
+  { id:"ohp_db",       name:"Wyciskanie nad głowę hantlami",muscle:"barki" },
+  { id:"step_up",      name:"Step-up",                      muscle:"nogi" },
+  { id:"rdl",          name:"Martwy ciąg rumuński",         muscle:"dwugłowe" }
 ];
+
+// --- Baza ćwiczeń (localStorage) ---
+function loadExercises(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEYS.EXERCISES);
+    if(!raw) return [...defaultExercises];
+    return JSON.parse(raw);
+  }catch(e){
+    console.warn("Błąd ładowania bazy ćwiczeń", e);
+    return [...defaultExercises];
+  }
+}
+function saveExercises(){
+  localStorage.setItem(STORAGE_KEYS.EXERCISES, JSON.stringify(exercises));
+}
 
 // --- Pomocnicze DOM ---
 function el(q){ return document.querySelector(q) }
@@ -575,6 +597,10 @@ const loadLastBtn = el('#loadLastBtn');
 const exportBtn = el('#exportBtn');
 const importBtn = el('#importBtn');  
 const alarmAudio = document.getElementById('alarmAudio');
+const exDbName   = el('#exDbName');
+const exDbMuscle = el('#exDbMuscle');
+const exDbAddBtn = el('#exDbAddBtn');
+const exDbList   = el('#exDbList');
 
 let timerInterval = null;
 let timerSec = 0;
@@ -582,6 +608,7 @@ let plans = {};
 let sessions = [];
 let chartVolume = null;
 let chartWeight = null;
+let exercises = [];
 
 // --- Storage helpers ---
 function loadPlans(){
@@ -1099,6 +1126,25 @@ if(exportBtn){
 if(importBtn){
   importBtn.addEventListener('click', importData);
 }
+if(exDbAddBtn){
+  exDbAddBtn.addEventListener('click', ()=>{
+    const name   = (exDbName.value || '').trim();
+    const muscle = (exDbMuscle.value || '').trim();
+
+    if(!name){
+      alert('Podaj nazwę ćwiczenia.');
+      return;
+    }
+
+    const id = 'ex_' + Date.now();
+    exercises.push({ id, name, muscle });
+    saveExercises();
+    renderExerciseDb();
+
+    exDbName.value = '';
+    exDbMuscle.value = '';
+  });
+}
 
 // --- Kalendarz tygodniowy + statystyki ---
 function getWeekRange(baseDateStr){
@@ -1402,6 +1448,36 @@ function renderPlanEditor(){
     });
   });
 }
+  // --- Lista bazy ćwiczeń ---
+function renderExerciseDb(){
+  if(!exDbList) return;
+  if(!exercises || !exercises.length){
+    exDbList.innerHTML = '<div class="small">Brak ćwiczeń w bazie.</div>';
+    return;
+  }
+
+  let html = '';
+  exercises.forEach(ex=>{
+    html += `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+        <span>${ex.name} <span style="opacity:0.7;">(${ex.muscle || '-'})</span></span>
+        <button class="btn-ghost btn-small ex-db-del" data-id="${ex.id}">Usuń</button>
+      </div>`;
+  });
+
+  exDbList.innerHTML = html;
+
+  // obsługa usuwania
+  elAll('.ex-db-del').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.id;
+      exercises = exercises.filter(ex=>ex.id !== id);
+      saveExercises();
+      renderExerciseDb();
+    });
+  });
+}
+
 // --- Picker ćwiczeń ---
 function openExercisePicker(idx){
   const search = prompt("Wyszukaj ćwiczenie (nazwa / partia):", "");
@@ -1537,19 +1613,17 @@ saveBtn.addEventListener('click', saveSession);
   plans = loadPlans();
   sessions = loadSessions();
   exercises = loadExercises();
-  
+
   sessionDate.value = formatLocalDate(new Date());
   refreshPlanSelects();
-  if(sessionType.options.length) sessionType.value = sessionType.options[0].value;
-  if(planSelect.options.length) planSelect.value = planSelect.options[0].value;
-
-  renderPlan(sessionType.value);
-  renderPlanEditor();
+  ...
   renderHistory();
   renderCalendarAndStats();
   updateCharts();
   initMobileSections();
+  renderExerciseDb();   // <-- DODANE
 })();
+
 </script>
 </body>
 </html>
