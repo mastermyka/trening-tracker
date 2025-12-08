@@ -797,6 +797,21 @@ function estimateKcal(totalVolume, bodyWeight){
 
 // --- Zapis sesji ---
 function saveSession(){
+  // 1) Po kliknięciu "Zapisz sesję" – odhacz wszystkie serie w aktualnym treningu
+  elAll('.checkbox').forEach(cb => {
+    cb.checked = true;           // zaznacz jako zrobione
+    updateSetRowStyle(cb);       // nadaje zielone tło itp.
+  });
+  updateProgress();              // pasek progresu na 100%
+
+  // 2) Dalej zostaje Twój stary kod
+  const date = sessionDate.value || formatLocalDate(new Date());
+  const planId = sessionType.value;
+  const plan = plans[planId];
+  if(!plan) return alert('Brak planu dla wybranego treningu.');
+  ...
+}
+
   const date = sessionDate.value || formatLocalDate(new Date());
   const planId = sessionType.value;
   const plan = plans[planId];
