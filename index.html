@@ -1035,8 +1035,123 @@ function getWeekRange(baseDateStr){
 function renderCalendarAndStats(){
   const baseDateStr = sessionDate.value || formatLocalDate(new Date());
   const {monday, sunday} = getWeekRange(baseDateStr);
-  ...
+
+  let html = '<div class="badge"><span class="badge-dot"></span><span>Bieżący tydzień</span></div>';
+  html += '<div class="week-grid">';
+  for(let i=0;i<7;i++){
+    const dayDate = new Date(monday);
+    dayDate.setDate(monday.getDate()+i);
+    const dStr = formatLocalDate(dayDate);
+    const daySessions = sessions.filter(s=>s.date===dStr);
+    const dayName = ['Pn','Wt','Śr','Cz','Pt','So','Nd'][i];
+    const totalVol = daySessions.reduce((acc,s)=>acc+s.totalVolume,0);
+    const intensityClass = totalVol===0 ? '' : (totalVol<2000?'yellow':'green');
+
+    html += `<div class="week-day" data-date="${dStr}">
+      <strong>${dayName}</strong>
+      <span>${dStr.slice(5)}</span>`;
+    if(!daySessions.length){
+      html += `<span class="small">Brak treningu</span>`;
+    }else{
+      daySessions.forEach(s=>{
+        html += `<div class="tag">${s.planLabel || s.planId}</div>`;
+      });
+      if(totalVol>0){
+        html += `<div class="small ${intensityClass}">Objętość: ${Math.round(totalVol)} kg</div>`;
+      }
+    }
+    html += `</div>`;
+  }
+  html += '</div>';
+  calendarWeekDiv.innerHTML = html;
+
+  // kliknięcie w dzień ustawia datę i przeładowuje tydzień
+  elAll('.week-day').forEach(dayEl=>{
+    const dateStr = dayEl.getAttribute('data-date');
+    dayEl.addEventListener('click', ()=>{
+      if(dateStr){
+        sessionDate.value = dateStr;
+        renderCalendarAndStats();
+      }
+    });
+  });
+
+  const weekSessions = sessions.filter(s=>{
+    const d = parseDate(s.date);
+    return d>=monday && d<=sunday;
+  });
+
+  const now = baseDateStr ? parseDate(baseDateStr) : new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const monthSessions = sessions.filter(s=>{
+    const d = parseDate(s.date);
+    return d.getFullYear()===year && d.getMonth()===month;
+  });
+
+  // --- Roczne statystyki ---
+  const yearSessionsAll = sessions.filter(s=>{
+    const d = parseDate(s.date);
+    return d.getFullYear() === year;
+  });
+
+  const yearVolume = yearSessionsAll.reduce((acc, s) => acc + s.totalVolume, 0);
+  const yearKcal   = yearSessionsAll.reduce((acc, s) => acc + (s.kcal || 0), 0);
+
+  const weekVolume = weekSessions.reduce((acc,s)=>acc+s.totalVolume,0);
+  const weekKcal   = weekSessions.reduce((acc,s)=>acc+(s.kcal||0),0);
+  const monthVolume = monthSessions.reduce((acc,s)=>acc+s.totalVolume,0);
+  const monthKcal   = monthSessions.reduce((acc,s)=>acc+(s.kcal||0),0);
+
+  const bwSessions = sessions.filter(s=>s.bodyWeight);
+  const lastBw = bwSessions.length ? bwSessions[bwSessions.length-1].bodyWeight : null;
+
+  let statsHtml = '';
+  statsHtml += `<div class="stats">
+    <div class="stat-row">
+      <span>Tydzień – ilość treningów</span>
+      <span><strong>${weekSessions.length}</strong></span>
+    </div>
+    <div class="stat-row">
+      <span>Tydzień – objętość</span>
+      <span><strong>${Math.round(weekVolume)} kg</strong></span>
+    </div>
+    <div class="stat-row">
+      <span>Tydzień – kcal (szac. / AW)</span>
+      <span class="kcal">${weekKcal} kcal</span>
+    </div>
+    <div class="stat-row">
+      <span>Miesiąc – ilość treningów</span>
+      <span><strong>${monthSessions.length}</strong></span>
+    </div>
+    <div class="stat-row">
+      <span>Miesiąc – objętość</span>
+      <span><strong>${Math.round(monthVolume)} kg</strong></span>
+    </div>
+    <div class="stat-row">
+      <span>Miesiąc – kcal (szac. / AW)</span>
+      <span class="kcal">${monthKcal} kcal</span>
+    </div>
+    <div class="stat-row">
+      <span>Rok – ilość treningów</span>
+      <span><strong>${yearSessionsAll.length}</strong></span>
+    </div>
+    <div class="stat-row">
+      <span>Rok – objętość</span>
+      <span><strong>${Math.round(yearVolume)} kg</strong></span>
+    </div>
+    <div class="stat-row">
+      <span>Rok – kcal</span>
+      <span class="kcal">${yearKcal} kcal</span>
+    </div>
+    <div class="stat-row">
+      <span>Ostatnia waga ciała</span>
+      <span><strong>${lastBw ? lastBw.toFixed(1)+' kg' : '-'}</strong></span>
+    </div>
+  </div>`;
+  statsWeekDiv.innerHTML = statsHtml;
 }
+
 
   let html = '<div class="badge"><span class="badge-dot"></span><span>Bieżący tydzień</span></div>';
   html += '<div class="week-grid">';
