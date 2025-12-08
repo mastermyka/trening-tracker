@@ -455,14 +455,19 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     </div>
 
     <!-- HISTORIA SESJI -->
-    <div class="card mobile-section" data-section="history" style="margin-top:12px">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div class="section-title">Historia sesji</div>
-        <button id="loadLastBtn" class="btn-ghost btn-small">Otwórz ostatnią</button>
-      </div>
-      <div id="history" class="history-list"><div class="small">Brak zapisanych sesji.</div></div>
-      <div class="footer small">Dane zapisane lokalnie (localStorage). Możesz w każdej chwili zrobić backup przez skopiowanie danych z konsoli.</div>
+   <div class="card mobile-section" data-section="history" style="margin-top:12px">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div class="section-title">Historia sesji</div>
+    <div class="history-buttons">
+      <button id="loadLastBtn" class="btn-ghost btn-small">Otwórz ostatnią</button>
+      <button id="exportBtn" class="btn-ghost btn-small">Eksport JSON</button>
+      <button id="importBtn" class="btn-primary btn-small">Import JSON</button>
     </div>
+  </div>
+  <div id="history" class="history-list"><div class="small">Brak zapisanych sesji.</div></div>
+  <div class="footer small">Dane zapisane lokalnie (localStorage). Możesz w każdej chwili zrobić backup przez eksport JSON.</div>
+</div>
+
 
     <!-- WYKRESY -->
     <div class="card mobile-section" data-section="charts" style="margin-top:12px">
@@ -551,6 +556,8 @@ const planEditorArea = el('#planEditorArea');
 const calendarWeekDiv = el('#calendarWeek');
 const statsWeekDiv = el('#statsWeek');
 const loadLastBtn = el('#loadLastBtn');
+const exportBtn = el('#exportBtn');
+const importBtn = el('#importBtn');  
 const alarmAudio = document.getElementById('alarmAudio');
 
 let timerInterval = null;
@@ -975,6 +982,12 @@ loadLastBtn.addEventListener('click', ()=>{
   const last = [...sessions].sort((a,b)=> parseDate(b.date) - parseDate(a.date))[0];
   loadSessionToForm(last.id);
 });
+if(exportBtn){
+  exportBtn.addEventListener('click', exportData);
+}
+if(importBtn){
+  importBtn.addEventListener('click', importData);
+}
 
 // --- Kalendarz tygodniowy + statystyki ---
 function getWeekRange(baseDateStr){
@@ -1169,6 +1182,65 @@ function resetAfterSave(){
   // 3) wyzerowanie timera
   clearInterval(timerInterval);
   timerDisplay.textContent = '0s';
+}
+function exportData(){
+  const payload = {
+    version: 'tt_premium_4.3',
+    exportedAt: new Date().toISOString(),
+    plans,
+    sessions
+  };
+  const json = JSON.stringify(payload, null, 2);
+
+  try{
+    const blob = new Blob([json], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'trening-tracker-backup.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }catch(e){
+    console.error(e);
+    // fallback – jakby blob/downloader nie zadziałał
+    prompt('Nie udało się automatycznie pobrać pliku. Skopiuj ten JSON:', json);
+  }
+}
+
+function importData(){
+  const input = prompt('Wklej JSON wyeksportowany z Trening Tracker:');
+  if(!input) return;
+
+  try{
+    const parsed = JSON.parse(input);
+
+    if(parsed.plans && typeof parsed.plans === 'object'){
+      plans = parsed.plans;
+      savePlans();
+    }
+    if(Array.isArray(parsed.sessions)){
+      sessions = parsed.sessions;
+      saveSessions();
+    }
+
+    // odśwież UI po imporcie
+    refreshPlanSelects();
+    if(sessionType.options.length) sessionType.value = sessionType.options[0].value;
+    if(planSelect.options.length) planSelect.value = planSelect.options[0].value;
+
+    renderPlan(sessionType.value);
+    renderPlanEditor();
+    renderHistory();
+    renderCalendarAndStats();
+    updateCharts();
+
+    alert('Dane zaimportowane ✅');
+  }catch(e){
+    console.error(e);
+    alert('Błąd importu JSON. Sprawdź, czy wkleiłeś poprawne dane.');
+  }
 }
 
 
