@@ -876,6 +876,16 @@ function saveSession(){
   renderHistory();
   renderCalendarAndStats();
   updateCharts();
+   // 🔽🔽🔽 DODANY FRAGMENT – odhaczenie wszystkiego po zapisie 🔽🔽🔽
+  elAll('.checkbox').forEach(cb => {
+    cb.checked = false; // odznacz
+    const row = cb.closest('.set-row');
+    if (row) {
+      row.classList.remove('set-row-done', 'set-row-partial');
+    }
+  });
+  updateProgress(); // paski progresu wracają do 0%
+  // 🔼🔼🔼 KONIEC DODANEGO FRAGMENTU 🔼🔼🔼
   alert('Sesja zapisana (Premium 4.3 ✅)');
 }
 
