@@ -86,7 +86,7 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
 
   body{
     margin:6px;
-    font-size:13px;
+    font-size:14px;
   }
 
   header{
@@ -97,15 +97,15 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     background:var(--bg);
     flex-direction:column;
     align-items:flex-start;
-    gap:4px;
+    gap:6px;
   }
 
   h1{
-    font-size:14px;
+    font-size:15px;
   }
 
   .small{
-    font-size:10px;
+    font-size:11px;
   }
 
   .section-title{
@@ -113,7 +113,7 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
   }
 
   th,td{
-    font-size:12px;
+    font-size:13px;
   }
 
   .workout-title{
@@ -125,7 +125,7 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
   /* GÓRNE KONTROLKI – jedna pod drugą */
   .controls{
     width:100%;
-    gap:4px;
+    gap:6px;
     align-items:stretch;
   }
   .controls > *{
@@ -138,7 +138,7 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
   .actions{
     margin-left:0;
     width:100%;
-    gap:4px;
+    gap:6px;
   }
   .actions button{
     flex:1 1 50%;
@@ -147,13 +147,13 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
   .input,
   select,
   button{
-    padding:7px 9px;
-    font-size:13px;
+    padding:8px 10px;
+    font-size:14px;
   }
 
   .btn-primary,
   .btn-ghost{
-    min-height:34px;
+    min-height:38px;
   }
 
   .card{
@@ -166,29 +166,29 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
   }
 
   .note{
-    font-size:10px;
+    font-size:11px;
   }
 
   .row{
     width:100%;
   }
 
-  /* WSZYSTKO W RZĘDZIE = PEŁNA SZEROKOŚĆ, BEZ UCIĘĆ */
+  /* Apple Watch / Timer – pół na pół w rzędzie, reszta łamie się niżej */
   .row > input,
   .row > select,
   .row > button{
-    flex:1 1 100%;
+    flex:1 1 calc(50% - 6px);
     width:100% !important;
   }
 
   .series-input{
-    width:64px;
-    padding:5px;
-    font-size:13px;
+    width:70px;
+    padding:6px;
+    font-size:14px;
   }
 
   .checkbox{
-    transform:scale(1.15);
+    transform:scale(1.2);
     margin-right:6px;
   }
 
@@ -196,14 +196,63 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     max-height:220px;
   }
 
-  /* KALENDARZ – przewijany w poziomie */
+  /* SEKCJA ĆWICZEŃ – mobilny układ, bez poziomego scrolla */
+  .exercise-table{
+    width:100%;
+  }
+  .exercise-table thead{
+    display:none;
+  }
+  .exercise-table tr{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:auto auto;
+    gap:4px;
+    padding:4px 0;
+  }
+  .exercise-table td{
+    border:none;
+    padding:2px 4px;
+  }
+  .exercise-table td[data-label="Seria"]{
+    grid-column:1/2;
+    grid-row:1;
+    font-weight:600;
+  }
+  .exercise-table td[data-label="Ciężar"]{
+    grid-column:2/3;
+    grid-row:1;
+  }
+  .exercise-table td[data-label="Powt."]{
+    grid-column:1/2;
+    grid-row:2;
+  }
+  .exercise-table td[data-label="Odhacz"]{
+    grid-column:2/3;
+    grid-row:2;
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+  }
+
+  /* Plan editor / statystyki – mogą mieć własny poziomy scroll */
+  #planEditorCard,
+  aside .card{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  #planEditorArea table{
+    min-width:480px;
+  }
+
+  /* KALENDARZ – poziomy scroll */
   .week-grid{
     display:grid;
     grid-auto-flow:column;
     grid-auto-columns:minmax(110px, 1fr);
     gap:6px;
     margin-top:6px;
-    font-size:10px;
+    font-size:11px;
     overflow-x:auto;
     -webkit-overflow-scrolling:touch;
   }
@@ -213,7 +262,7 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     white-space:normal;
   }
 
-  /* Wykresy – niższe na telefonie */
+  /* Wykresy – trochę niższe */
   #chartVolume,
   #chartWeight{
     height:140px !important;
@@ -226,7 +275,6 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
 }
 </style>
 </head>
-
 <body data-theme="light">
 <header>
   <div>
@@ -455,6 +503,22 @@ function refreshPlanSelects(){
   });
 }
 
+// --- Helpery dat (lokalne, bez UTC) ---
+function parseDate(d){
+  if(!d) return new Date();
+  const parts = d.split('-').map(Number);
+  const y = parts[0];
+  const m = (parts[1] || 1) - 1;
+  const day = parts[2] || 1;
+  return new Date(y, m, day);
+}
+function formatLocalDate(date){
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2,'0');
+  const d = String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+
 // --- Render planu treningowego ---
 function renderPlan(typeId){
   const plan = plans[typeId];
@@ -471,13 +535,13 @@ function renderPlan(typeId){
       <div><strong>${ex.name}</strong><div class="small">${ex.muscle || ''}</div></div>
       <div class="small">Serii: ${ex.sets} • Powt: ${ex.reps}</div>
     </div>`;
-    html+='<table><thead><tr><th>Seria</th><th>Ciężar (kg)</th><th>Powt.</th><th>Odhacz</th></tr></thead><tbody>';
+    html+='<table class="exercise-table"><thead><tr><th>Seria</th><th>Ciężar (kg)</th><th>Powt.</th><th>Odhacz</th></tr></thead><tbody>';
     for(let s=1;s<=ex.sets;s++){
       html+=`<tr class="set-row" data-ex="${idx}" data-set="${s}">
-        <td>S${s}</td>
-        <td><input type="number" class="series-input weight-input" data-ex="${idx}" data-set="${s}" placeholder="" step="0.5"/></td>
-        <td><input class="series-input" type="text" value="${ex.reps}" disabled/></td>
-        <td><input type="checkbox" class="checkbox" data-ex="${idx}" data-set="${s}"/></td>
+        <td data-label="Seria">S${s}</td>
+        <td data-label="Ciężar"><input type="number" class="series-input weight-input" data-ex="${idx}" data-set="${s}" placeholder="" step="0.5"/></td>
+        <td data-label="Powt."><input class="series-input" type="text" value="${ex.reps}" disabled/></td>
+        <td data-label="Odhacz"><input type="checkbox" class="checkbox" data-ex="${idx}" data-set="${s}"/></td>
       </tr>`;
     }
     html+='</tbody></table>';
@@ -531,20 +595,7 @@ function updateProgress(){
   });
 }
 
-// --- Helpery dat (lokalne, bez UTC) ---
-function parseDate(d){
-  if(!d) return new Date();
-  const [y, m, day] = d.split('-').map(Number);
-  return new Date(y, (m || 1) - 1, day || 1);
-}
-function formatLocalDate(date){
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-// --- Automatyczna progresja (na podstawie poprzedniej sesji) ---
+// --- Automatyczna progresja ---
 function applyLastSessionProgression(planId){
   const currentDate = sessionDate.value || formatLocalDate(new Date());
   const relevant = sessions
@@ -803,7 +854,6 @@ function loadSessionToForm(id){
   alert('Sesja załadowana do formularza ✅');
 }
 
-// --- Przycisk "Otwórz ostatnią" ---
 loadLastBtn.addEventListener('click', ()=>{
   if(!sessions.length){
     alert('Brak zapisanych sesji.');
@@ -869,7 +919,7 @@ function renderCalendarAndStats(){
     return d>=monday && d<=sunday;
   });
 
-  const now = parseDate(baseDateStr);
+  const now = baseDateStr ? parseDate(baseDateStr) : new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
   const monthSessions = sessions.filter(s=>{
@@ -1078,7 +1128,7 @@ el('#savePlanBtn').addEventListener('click', ()=>{
   renderPlan(sessionType.value);
 });
 
-// --- Zdarzenia ---
+// --- Zdarzenia na zmianę typu i daty / zapis ---
 sessionType.addEventListener('change', ()=>{
   renderPlan(sessionType.value);
 });
@@ -1092,7 +1142,7 @@ saveBtn.addEventListener('click', saveSession);
   plans = loadPlans();
   sessions = loadSessions();
 
-  sessionDate.valueAsDate = new Date();
+  sessionDate.value = formatLocalDate(new Date());
   refreshPlanSelects();
   if(sessionType.options.length) sessionType.value = sessionType.options[0].value;
   if(planSelect.options.length) planSelect.value = planSelect.options[0].value;
