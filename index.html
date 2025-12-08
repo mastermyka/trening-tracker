@@ -195,61 +195,56 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     max-height:220px;
   }
 
-  /* Ćwiczenia – pion: S1, ciężar, powt., checkbox z prawej */
-  .exercise-table{
-    width:100%;
-    border-collapse:collapse;
-  }
-  .exercise-table thead{
-    display:none;
-  }
-  .exercise-table tr{
-    display:grid;
-    grid-template-columns:1fr auto;
-    grid-template-rows:auto auto auto;
-    align-items:center;
-    gap:2px 4px;
-    padding:4px 0;
-  }
-  .exercise-table td{
-    border:none;
-    padding:2px 4px;
-  }
-  .exercise-table td[data-label="Seria"]{
-    grid-column:1;
-    grid-row:1;
-    font-weight:600;
-  }
-  .exercise-table td[data-label="Ciężar"]{
-    grid-column:1;
-    grid-row:2;
-  }
-  .exercise-table td[data-label="Powt."]{
-    grid-column:1;
-    grid-row:3;
-  }
-    /* Etykiety nad polami w seriach – mobile */
-  .exercise-table td[data-label="Ciężar"]::before,
-  .exercise-table td[data-label="Powt."]::before{
-    display:block;
-    font-size:10px;
-    color:var(--muted);
-    margin-bottom:2px;
-  }
-  .exercise-table td[data-label="Ciężar"]::before{
-    content:"Ciężar (kg)";
-  }
-  .exercise-table td[data-label="Powt."]::before{
-    content:"Powt.";
-  }
+  /* Ćwiczenia – poziom: S1 | ciężar | powt. | checkbox */
+.exercise-table{
+  width:100%;
+  border-collapse:collapse;
+}
+.exercise-table thead{
+  display:none; /* bez nagłówka na mobile */
+}
+.exercise-table tr{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 0;
+}
+.exercise-table td{
+  border:none;
+  padding:0 2px;
+}
 
-  .exercise-table td[data-label="Odhacz"]{
-    grid-column:2;
-    grid-row:1 / 4;
-    display:flex;
-    justify-content:flex-end;
-    align-items:center;
-  }
+/* S1 / S2 / S3 – wąska kolumna */
+.exercise-table td[data-label="Seria"]{
+  width:32px;
+  font-weight:600;
+}
+
+/* Ciężar i powtórzenia dzielą miejsce po środku */
+.exercise-table td[data-label="Ciężar"],
+.exercise-table td[data-label="Powt."]{
+  flex:1;
+}
+
+/* Checkbox po prawej stronie */
+.exercise-table td[data-label="Odhacz"]{
+  width:32px;
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+}
+
+/* Małe etykiety nad polami (opcjonalnie) */
+.exercise-table td[data-label="Ciężar"]::before,
+.exercise-table td[data-label="Powt."]::before{
+  display:block;
+  font-size:10px;
+  color:var(--muted);
+  margin-bottom:2px;
+}
+.exercise-table td[data-label="Ciężar"]::before{ content:"Ciężar (kg)"; }
+.exercise-table td[data-label="Powt."]::before{ content:"Powt."; }
+
 
   /* --- EDYTOR PLANÓW – kompaktowy układ 2 linie --- */
   #planEditorArea table{
