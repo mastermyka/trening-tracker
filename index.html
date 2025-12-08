@@ -449,6 +449,8 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     <button id="exDbAddBtn" class="btn-primary btn-small" style="white-space:nowrap">Dodaj do bazy</button>
   </div>
   <div id="exDbList" class="small"></div>
+<div id="exDbPager" class="small" style="margin-top:4px;"></div>
+
 </div>
     </div>
   </div>
@@ -677,6 +679,7 @@ const exDbName   = el('#exDbName');
 const exDbMuscle = el('#exDbMuscle');
 const exDbAddBtn = el('#exDbAddBtn');
 const exDbList   = el('#exDbList');
+const exDbPager  = el('#exDbPager');
 
 let timerInterval = null;
 let timerSec = 0;
@@ -685,6 +688,8 @@ let sessions = [];
 let chartVolume = null;
 let chartWeight = null;
 let exercises = [];
+let exDbPage = 1;
+const EX_DB_PAGE_SIZE = 10;
 
 // --- Storage helpers ---
 function loadPlans(){
@@ -1213,6 +1218,7 @@ if(exDbAddBtn){
     const id = 'ex_' + Date.now();
     exercises.push({ id, name, muscle });
     saveExercises();
+    exDbPage = 1; // wracamy na pierwszą stronę po dodaniu
     renderExerciseDb();
 
     exDbName.value = '';
@@ -1525,13 +1531,24 @@ function renderPlanEditor(){
   // --- Lista bazy ćwiczeń ---
 function renderExerciseDb(){
   if(!exDbList) return;
+
   if(!exercises || !exercises.length){
     exDbList.innerHTML = '<div class="small">Brak ćwiczeń w bazie.</div>';
+    if(exDbPager) exDbPager.innerHTML = '';
     return;
   }
 
+  // --- paginacja ---
+  const totalPages = Math.max(1, Math.ceil(exercises.length / EX_DB_PAGE_SIZE));
+  if(exDbPage > totalPages) exDbPage = totalPages;
+  if(exDbPage < 1) exDbPage = 1;
+
+  const start = (exDbPage - 1) * EX_DB_PAGE_SIZE;
+  const pageItems = exercises.slice(start, start + EX_DB_PAGE_SIZE);
+
+  // lista ćwiczeń (tylko bieżąca strona)
   let html = '';
-  exercises.forEach(ex=>{
+  pageItems.forEach(ex=>{
     html += `
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
         <span>${ex.name} <span style="opacity:0.7;">(${ex.muscle || '-'})</span></span>
@@ -1541,16 +1558,53 @@ function renderExerciseDb(){
 
   exDbList.innerHTML = html;
 
-  // obsługa usuwania
+  // usuwanie ćwiczeń
   elAll('.ex-db-del').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const id = btn.dataset.id;
       exercises = exercises.filter(ex=>ex.id !== id);
       saveExercises();
+      // po usunięciu np. ostatniego elementu na stronie pilnujemy zakresu
       renderExerciseDb();
     });
   });
+
+  // pager
+  if(exDbPager){
+    if(totalPages === 1){
+      exDbPager.innerHTML = '';
+    }else{
+      exDbPager.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <button class="btn-ghost btn-small" id="exDbPrev" ${exDbPage <= 1 ? 'disabled' : ''}>‹</button>
+          <span>Strona ${exDbPage} / ${totalPages}</span>
+          <button class="btn-ghost btn-small" id="exDbNext" ${exDbPage >= totalPages ? 'disabled' : ''}>›</button>
+        </div>
+      `;
+
+      const prev = el('#exDbPrev');
+      const next = el('#exDbNext');
+
+      if(prev){
+        prev.addEventListener('click', ()=>{
+          if(exDbPage > 1){
+            exDbPage--;
+            renderExerciseDb();
+          }
+        });
+      }
+      if(next){
+        next.addEventListener('click', ()=>{
+          if(exDbPage < totalPages){
+            exDbPage++;
+            renderExerciseDb();
+          }
+        });
+      }
+    }
+  }
 }
+
 
 // --- Picker ćwiczeń ---
 function openExercisePicker(idx){
