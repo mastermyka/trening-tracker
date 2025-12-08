@@ -23,6 +23,10 @@
   --accent-2:#2b8aef; --success:#34d399; --warn:#fbbf24; --error:#f87171;
 }
 *{box-sizing:border-box;font-family:Inter,system-ui,Arial,Helvetica,sans-serif}
+html,body{
+  max-width:100%;
+  overflow-x:hidden;      /* bezpieczeństwo – strona nie będzie się rozszerzać */
+}
 body{
   margin:12px;
   padding-top:env(safe-area-inset-top); /* bezpieczna strefa w PWA na iOS */
@@ -77,13 +81,12 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
 .kcal{font-weight:600}
 .history-buttons{display:flex;gap:6px;align-items:center}
 
-/* Mobile friendly tweaks (iPhone / PWA) */
+/* MOBILE – iPhone / PWA */
 @media (max-width:768px){
 
   body{
     margin:6px;
     font-size:14px;
-    overflow-x:hidden; /* dla bezpieczeństwa – nic nie wystaje poza ekran */
   }
 
   header{
@@ -119,20 +122,16 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     gap:4px;
   }
 
-  /* GÓRNE KONTROLKI – pełna szerokość, jedna pod drugą */
+  /* GÓRNE KONTROLKI – jedna pod drugą */
   .controls{
     width:100%;
     gap:6px;
     align-items:stretch;
   }
-
   .controls > *{
     flex:1 1 100%;
   }
-
-  #sessionDate,
-  #sessionType,
-  #bodyWeight{
+  #sessionDate,#sessionType,#bodyWeight{
     width:100% !important;
   }
 
@@ -140,9 +139,7 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     margin-left:0;
     width:100%;
     gap:6px;
-    justify-content:space-between;
   }
-
   .actions button{
     flex:1 1 50%;
   }
@@ -168,7 +165,7 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     width:100%;
   }
 
-  /* wiersze z inputami (Apple Watch, Timer itp.) – 2 kolumny, nic nie wystaje */
+  /* Apple Watch / Timer – dwa elementy w rzędzie, reszta łamie się niżej */
   .row > input,
   .row > select,
   .row > button{
@@ -177,7 +174,7 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
   }
 
   .series-input{
-    width:100%;
+    width:70px;
     padding:6px;
     font-size:14px;
   }
@@ -191,49 +188,19 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     max-height:220px;
   }
 
-  /* --- SERIE ĆWICZEŃ: rozbij na 2–3 linie zamiast szerokiego wiersza --- */
-  #workoutArea table{
-    width:100%;
-    border-collapse:separate;
+  /* KAŻDA „duża” sekcja ma własny poziomy scroll zamiast rozszerzać stronę */
+  #workoutArea .card,
+  #planEditorCard,
+  aside .card{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
   }
 
-  /* chowamy nagłówki tabel w części z seriami */
-  #workoutArea table thead{
-    display:none;
-  }
-
-  /* każdy wiersz serii to mała “karta” w gridzie 2 kolumny */
-  #workoutArea .set-row{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    grid-template-areas:
-      "serie serie"
-      "weight reps"
-      "check check";
-    row-gap:4px;
-    padding:4px 0;
-  }
-
-  #workoutArea .set-row td{
-    border-bottom:none;
-    padding:2px 4px;
-  }
-
-  #workoutArea .set-row td:nth-child(1){ /* Seria */
-    grid-area:serie;
-    font-weight:600;
-  }
-  #workoutArea .set-row td:nth-child(2){ /* Ciężar */
-    grid-area:weight;
-  }
-  #workoutArea .set-row td:nth-child(3){ /* Powt. */
-    grid-area:reps;
-  }
-  #workoutArea .set-row td:nth-child(4){ /* Odhacz */
-    grid-area:check;
-    display:flex;
-    align-items:center;
-    justify-content:flex-start;
+  /* tabele wewnątrz tych kart mogą być szersze niż ekran,
+     ale przewijają się tylko w obrębie karty */
+  #workoutArea table,
+  #planEditorArea table{
+    min-width:480px;
   }
 
   /* KALENDARZ – przewijany w poziomie */
@@ -247,7 +214,6 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     overflow-x:auto;
     -webkit-overflow-scrolling:touch;
   }
-
   .week-day{
     min-height:auto;
     padding:6px;
@@ -266,6 +232,7 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
   }
 }
 </style>
+
 
 </head>
 <body data-theme="light">
