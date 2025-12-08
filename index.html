@@ -1043,6 +1043,14 @@ function renderCalendarAndStats(){
     const d = parseDate(s.date);
     return d.getFullYear()===year && d.getMonth()===month;
   });
+// --- Roczne statystyki ---
+const yearSessionsAll = sessions.filter(s=>{
+  const d = parseDate(s.date);
+  return d.getFullYear() === year;
+});
+
+const yearVolume = yearSessionsAll.reduce((acc, s) => acc + s.totalVolume, 0);
+const yearKcal   = yearSessionsAll.reduce((acc, s) => acc + (s.kcal || 0), 0);
 
   const weekVolume = weekSessions.reduce((acc,s)=>acc+s.totalVolume,0);
   const weekKcal = weekSessions.reduce((acc,s)=>acc+(s.kcal||0),0);
@@ -1079,6 +1087,19 @@ function renderCalendarAndStats(){
       <span class="kcal">${monthKcal} kcal</span>
     </div>
     <div class="stat-row">
+          <div class="stat-row">
+      <span>Rok – ilość treningów</span>
+      <span><strong>${yearSessionsAll.length}</strong></span>
+    </div>
+    <div class="stat-row">
+      <span>Rok – objętość</span>
+      <span><strong>${Math.round(yearVolume)} kg</strong></span>
+    </div>
+    <div class="stat-row">
+      <span>Rok – kcal</span>
+      <span class="kcal">${yearKcal} kcal</span>
+    </div>
+
       <span>Ostatnia waga ciała</span>
       <span><strong>${lastBw ? lastBw.toFixed(1)+' kg' : '-'}</strong></span>
     </div>
