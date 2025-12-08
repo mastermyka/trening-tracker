@@ -657,11 +657,30 @@ function renderPlan(typeId){
     html+='<table class="exercise-table"><thead><tr><th>Seria</th><th>Ciężar (kg)</th><th>Powt.</th><th>Odhacz</th></tr></thead><tbody>';
     for(let s=1;s<=ex.sets;s++){
       html+=`<tr class="set-row" data-ex="${idx}" data-set="${s}">
-        <td data-label="Seria">S${s}</td>
-        <td data-label="Ciężar"><input type="number" class="series-input weight-input" data-ex="${idx}" data-set="${s}" placeholder="" step="0.5"/></td>
-        <td data-label="Powt."><input class="series-input" type="text" value="${ex.reps}" disabled/></td>
-        <td data-label="Odhacz"><input type="checkbox" class="checkbox" data-ex="${idx}" data-set="${s}"/></td>
-      </tr>`;
+  <td data-label="Seria">S${s}</td>
+  <td data-label="Ciężar">
+    <input
+      type="number"
+      class="series-input weight-input"
+      data-ex="${idx}"
+      data-set="${s}"
+      placeholder=""
+      step="0.5"
+    />
+  </td>
+  <td data-label="Powt.">
+    <input
+      type="number"
+      class="series-input reps-input"
+      data-ex="${idx}"
+      data-set="${s}"
+      placeholder="${ex.reps}"  <!-- zaplanowane powtórzenia w placeholderze -->
+    />
+  </td>
+  <td data-label="Odhacz">
+    <input type="checkbox" class="checkbox" data-ex="${idx}" data-set="${s}"/>
+  </td>
+</tr>`;
     }
     html+='</tbody></table>';
     html+='<div class="progress-bar"><div class="progress-fill" id="progress-'+idx+'"></div></div>';
@@ -692,6 +711,16 @@ function updateSetRowStyle(cb){
     row.classList.remove('set-row-done');
   }
 }
+  function getPlannedRepsNumber(repsStr){
+  if(!repsStr) return 0;
+  const rangeMatch = repsStr.match(/(\d+)\s*-\s*(\d+)/);
+  if(rangeMatch){
+    return parseInt(rangeMatch[2]); // bierzemy górny zakres, np. 6-10 -> 10
+  }
+  const singleMatch = repsStr.match(/(\d+)/);
+  return singleMatch ? parseInt(singleMatch[1]) : 0;
+}
+
 function updateProgress(){
   const plan = plans[sessionType.value];
   if(!plan) return;
@@ -716,31 +745,66 @@ function updateProgress(){
 
 // --- Automatyczna progresja ---
 function applyLastSessionProgression(planId){
+  const plan = plans[planId];
+  if(!plan) return;
+
   const currentDate = sessionDate.value || formatLocalDate(new Date());
   const relevant = sessions
-    .filter(s=>s.planId===planId && s.date <= currentDate)
-    .sort((a,b)=> parseDate(b.date) - parseDate(a.date));
+    .filter(s => s.planId === planId && s.date <= currentDate)
+    .sort((a,b) => parseDate(b.date) - parseDate(a.date));
+
   if(!relevant.length) return;
-  const last = relevant[0];
 
-  (last.exercises || []).forEach((exLast, idx)=>{
-    const currentPlan = plans[planId];
-    if(!currentPlan || !currentPlan.exercises[idx]) return;
-    const sameName = currentPlan.exercises[idx].name === exLast.name;
-    if(!sameName) return;
+  const lastSession = relevant[0]; // do wzięcia bazowego ciężaru
 
-    const allDone = (exLast.sets || []).every(st=>st.done && st.weight>0);
-    const step = allDone ? 2.5 : 0;
+  (plan.exercises || []).forEach((exPlan, idx) => {
+    // bierzemy tylko sesje, gdzie pod tym indeksem jest to samo ćwiczenie
+    const exSessions = relevant.filter(s => {
+      const exS = (s.exercises || [])[idx];
+      return exS && exS.name === exPlan.name;
+    });
 
-    (exLast.sets || []).forEach((setLast, sIdx)=>{
+    const N = 4; // ilość treningów z rzędu wymaganych do progresji
+    if(exSessions.length < N) return;
+
+    const repsGoal = getPlannedRepsNumber(exPlan.reps);
+
+    let allGood = true;
+
+    // sprawdzamy ostatnie N treningów tego ćwiczenia
+    for(let i=0; i<N; i++){
+      const exS = exSessions[i].exercises[idx];
+      const setsArr = exS.sets || [];
+
+      const thisSessionGood = setsArr.every(st => {
+        const repsDone = typeof st.repsDone === 'number' ? st.repsDone : 0;
+        // warunek: seria odhaczona, waga > 0 i powt. wykonane >= zaplanowane
+        return st.done && st.weight > 0 && repsDone >= (st.repsPlanned || repsGoal);
+      });
+
+      if(!thisSessionGood){
+        allGood = false;
+        break;
+      }
+    }
+
+    const step = allGood ? 2.5 : 0;
+    if(step === 0) return;
+
+    // korzystamy z ostatniej sesji jako bazowego ciężaru
+    const exLast = lastSession.exercises[idx];
+    if(!exLast) return;
+
+    (exLast.sets || []).forEach((setLast, sIdx) => {
       const input = el(`input.weight-input[data-ex="${idx}"][data-set="${sIdx+1}"]`);
       if(!input) return;
       const base = parseFloat(setLast.weight) || 0;
       const next = base + step;
-      if(next>0) input.value = next.toFixed(1);
+      if(next > 0) input.value = next.toFixed(1);
     });
   });
 }
+
 
 // --- Timer ---
 el('#startTimer').addEventListener('click', ()=>{
@@ -820,21 +884,29 @@ function saveSession(){
   let totalWeight = 0;
   (plan.exercises || []).forEach((ex, idx)=>{
     const sets = [];
-    for(let s=1;s<=ex.sets;s++){
-      const wInput = el(`input.weight-input[data-ex="${idx}"][data-set="${s}"]`);
-      const cb = el(`input.checkbox[data-ex="${idx}"][data-set="${s}"]`);
-      const weight = wInput ? parseFloat(wInput.value)||0 : 0;
-      const repsStr = ex.reps || '';
-      const repsNum = parseInt(repsStr) || 0;
-      totalVolume += weight * repsNum;
-      totalWeight += weight;
-      sets.push({
-        set: s,
-        weight,
-        repsText: repsStr,
-        done: cb ? cb.checked : false
-      });
-    }
+    for(let s=1; s<=ex.sets; s++){
+  const wInput  = el(`input.weight-input[data-ex="${idx}"][data-set="${s}"]`);
+  const rInput  = el(`input.reps-input[data-ex="${idx}"][data-set="${s}"]`);
+  const cb      = el(`input.checkbox[data-ex="${idx}"][data-set="${s}"]`);
+
+  const weight       = wInput ? parseFloat(wInput.value) || 0 : 0;
+  const repsPlannedText = ex.reps || '';
+  const repsPlanned  = getPlannedRepsNumber(repsPlannedText);
+  const repsDone     = rInput ? (parseInt(rInput.value) || 0) : 0;
+
+  // do objętości używamy realnie zrobionych powtórzeń
+  totalVolume += weight * repsDone;
+  totalWeight += weight;
+
+  sets.push({
+    set: s,
+    weight,
+    repsPlannedText,
+    repsPlanned,
+    repsDone,
+    done: cb ? cb.checked : false
+  });
+}
     exData.push({
       name: ex.name,
       muscle: ex.muscle || '',
