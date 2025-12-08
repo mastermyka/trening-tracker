@@ -1022,8 +1022,10 @@ function getWeekRange(baseDateStr){
 }
 
 function renderCalendarAndStats(){
-  const baseDateStr = sessionDate.value || formatLocalDate(new Date()));
+  const baseDateStr = sessionDate.value || formatLocalDate(new Date());
   const {monday, sunday} = getWeekRange(baseDateStr);
+  ...
+}
 
   let html = '<div class="badge"><span class="badge-dot"></span><span>Bieżący tydzień</span></div>';
   html += '<div class="week-grid">';
