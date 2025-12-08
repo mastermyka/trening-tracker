@@ -10,9 +10,9 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="apple-touch-icon" sizes="152x152" href="apple-touch-icon.png">
 <link rel="apple-touch-icon" sizes="120x120" href="apple-touch-icon.png">
-<!-- Tryb aplikacji na iOS -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
 <style>
 :root{
   --bg:#f6f7fb; --card:#fff; --text:#0b1226; --muted:#6b7280; --accent:#2b8aef;
@@ -25,11 +25,11 @@
 *{box-sizing:border-box;font-family:Inter,system-ui,Arial,Helvetica,sans-serif}
 html,body{
   max-width:100%;
-  overflow-x:hidden;      /* bezpieczeństwo – strona nie będzie się rozszerzać */
+  overflow-x:hidden;
 }
 body{
   margin:12px;
-  padding-top:env(safe-area-inset-top); /* bezpieczna strefa w PWA na iOS */
+  padding-top:env(safe-area-inset-top);
   background:var(--bg);
   color:var(--text);
   -webkit-font-smoothing:antialiased;
@@ -157,8 +157,16 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
   }
 
   .card{
-    padding:8px 8px;
+    padding:6px 6px;         /* mniej powietrza na mobile */
     border-radius:12px;
+  }
+
+  th, td{
+    padding:4px;
+  }
+
+  .note{
+    font-size:11px;
   }
 
   .row{
@@ -186,21 +194,6 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
 
   .history-list{
     max-height:220px;
-  }
-
-  /* KAŻDA „duża” sekcja ma własny poziomy scroll zamiast rozszerzać stronę */
-  #workoutArea .card,
-  #planEditorCard,
-  aside .card{
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-  }
-
-  /* tabele wewnątrz tych kart mogą być szersze niż ekran,
-     ale przewijają się tylko w obrębie karty */
-  #workoutArea table,
-  #planEditorArea table{
-    min-width:480px;
   }
 
   /* KALENDARZ – przewijany w poziomie */
@@ -231,23 +224,9 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     gap:8px;
   }
 }
-    /* mniej „powietrza” na mobile */
-  .card{
-    padding:6px 6px;
-  }
-
-  th, td{
-    padding:4px;
-  }
-
-  .note{
-    font-size:11px;
-  }
-
 </style>
-
-
 </head>
+
 <body data-theme="light">
 <header>
   <div>
@@ -342,7 +321,6 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
   </aside>
 </div>
 
-<!-- AUDIO: sygnał po skończeniu timera (musi być przed skryptem, żeby JS go widział) -->
 <audio id="alarmAudio" preload="auto">
   <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" type="audio/ogg">
   Twoja przeglądarka nie obsługuje audio.
@@ -553,14 +531,12 @@ function updateProgress(){
   });
 }
 
-// --- Automatyczna progresja (na podstawie poprzedniej sesji) ---
 // --- Helpery dat (lokalne, bez UTC) ---
 function parseDate(d){
   if(!d) return new Date();
   const [y, m, day] = d.split('-').map(Number);
-  return new Date(y, (m || 1) - 1, day || 1); // lokalne 00:00
+  return new Date(y, (m || 1) - 1, day || 1);
 }
-
 function formatLocalDate(date){
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -568,9 +544,9 @@ function formatLocalDate(date){
   return `${y}-${m}-${d}`;
 }
 
-
+// --- Automatyczna progresja (na podstawie poprzedniej sesji) ---
 function applyLastSessionProgression(planId){
-  const currentDate = sessionDate.value || new Date().toISOString().slice(0,10);
+  const currentDate = sessionDate.value || formatLocalDate(new Date());
   const relevant = sessions
     .filter(s=>s.planId===planId && s.date <= currentDate)
     .sort((a,b)=> parseDate(b.date) - parseDate(a.date));
@@ -603,14 +579,13 @@ el('#startTimer').addEventListener('click', ()=>{
   timerDisplay.textContent = timerSec + 's';
   clearInterval(timerInterval);
 
-  // "Odblokowanie" dźwięku przez akcję użytkownika
   if (alarmAudio) {
     alarmAudio.play()
       .then(()=>{
         alarmAudio.pause();
         alarmAudio.currentTime = 0;
       })
-      .catch(()=>{ /* ignorujemy błąd, jeśli cicho */ });
+      .catch(()=>{});
   }
 
   timerInterval = setInterval(()=>{
@@ -619,7 +594,6 @@ el('#startTimer').addEventListener('click', ()=>{
       clearInterval(timerInterval);
       timerDisplay.textContent = 'KONIEC!';
 
-      // Odtworzenie dźwięku po skończeniu
       if (alarmAudio) {
         alarmAudio.currentTime = 0;
         alarmAudio.play().catch(()=>{});
@@ -650,7 +624,7 @@ el('#stopTimer').addEventListener('click', ()=>{
   }
 });
 
-// --- Szacowanie kcal (zapas jeśli brak z AW) ---
+// --- Szacowanie kcal ---
 function estimateKcal(totalVolume, bodyWeight){
   const bw = bodyWeight || 70;
   const base = totalVolume * 0.08;
@@ -660,7 +634,7 @@ function estimateKcal(totalVolume, bodyWeight){
 
 // --- Zapis sesji ---
 function saveSession(){
-  const date = sessionDate.value || new Date().toISOString().slice(0,10);
+  const date = sessionDate.value || formatLocalDate(new Date());
   const planId = sessionType.value;
   const plan = plans[planId];
   if(!plan) return alert('Brak planu dla wybranego treningu.');
@@ -788,7 +762,7 @@ function showSessionDetails(id){
   alert(msg);
 }
 
-// --- Ładowanie sesji do formularza (z historii / ostatnia) ---
+// --- Ładowanie sesji do formularza ---
 function loadSessionToForm(id){
   const s = sessions.find(x=>x.id===id);
   if(!s) return;
@@ -857,9 +831,8 @@ function getWeekRange(baseDateStr){
   };
 }
 
-
 function renderCalendarAndStats(){
-  const dStr = formatLocalDate(dayDate);
+  const baseDateStr = sessionDate.value || formatLocalDate(new Date());
   const {monday, sunday} = getWeekRange(baseDateStr);
 
   let html = '<div class="badge"><span class="badge-dot"></span><span>Bieżący tydzień</span></div>';
@@ -867,7 +840,7 @@ function renderCalendarAndStats(){
   for(let i=0;i<7;i++){
     const dayDate = new Date(monday);
     dayDate.setDate(monday.getDate()+i);
-    const dStr = dayDate.toISOString().slice(0,10);
+    const dStr = formatLocalDate(dayDate);
     const daySessions = sessions.filter(s=>s.date===dStr);
     const dayName = ['Pn','Wt','Śr','Cz','Pt','So','Nd'][i];
     const totalVol = daySessions.reduce((acc,s)=>acc+s.totalVolume,0);
@@ -896,7 +869,7 @@ function renderCalendarAndStats(){
     return d>=monday && d<=sunday;
   });
 
-  const now = baseDateStr ? parseDate(baseDateStr) : new Date();
+  const now = parseDate(baseDateStr);
   const year = now.getFullYear();
   const month = now.getMonth();
   const monthSessions = sessions.filter(s=>{
@@ -1105,7 +1078,7 @@ el('#savePlanBtn').addEventListener('click', ()=>{
   renderPlan(sessionType.value);
 });
 
-// --- Zdarzenia na zmianę typu i daty / zapis ---
+// --- Zdarzenia ---
 sessionType.addEventListener('change', ()=>{
   renderPlan(sessionType.value);
 });
