@@ -228,6 +228,21 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     grid-column:1;
     grid-row:3;
   }
+    /* Etykiety nad polami w seriach – mobile */
+  .exercise-table td[data-label="Ciężar"]::before,
+  .exercise-table td[data-label="Powt."]::before{
+    display:block;
+    font-size:10px;
+    color:var(--muted);
+    margin-bottom:2px;
+  }
+  .exercise-table td[data-label="Ciężar"]::before{
+    content:"Ciężar (kg)";
+  }
+  .exercise-table td[data-label="Powt."]::before{
+    content:"Powt.";
+  }
+
   .exercise-table td[data-label="Odhacz"]{
     grid-column:2;
     grid-row:1 / 4;
