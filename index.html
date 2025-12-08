@@ -231,6 +231,19 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     gap:8px;
   }
 }
+    /* mniej „powietrza” na mobile */
+  .card{
+    padding:6px 6px;
+  }
+
+  th, td{
+    padding:4px;
+  }
+
+  .note{
+    font-size:11px;
+  }
+
 </style>
 
 
@@ -541,7 +554,20 @@ function updateProgress(){
 }
 
 // --- Automatyczna progresja (na podstawie poprzedniej sesji) ---
-function parseDate(d){ return new Date(d + 'T00:00:00'); }
+// --- Helpery dat (lokalne, bez UTC) ---
+function parseDate(d){
+  if(!d) return new Date();
+  const [y, m, day] = d.split('-').map(Number);
+  return new Date(y, (m || 1) - 1, day || 1); // lokalne 00:00
+}
+
+function formatLocalDate(date){
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 
 function applyLastSessionProgression(planId){
   const currentDate = sessionDate.value || new Date().toISOString().slice(0,10);
@@ -816,18 +842,24 @@ loadLastBtn.addEventListener('click', ()=>{
 // --- Kalendarz tygodniowy + statystyki ---
 function getWeekRange(baseDateStr){
   const d = baseDateStr ? parseDate(baseDateStr) : new Date();
-  const day = d.getDay();
-  const diffToMonday = (day+6)%7;
+  const day = d.getDay(); // 0 = niedziela
+  const diffToMonday = (day + 6) % 7;
   const monday = new Date(d);
   monday.setDate(d.getDate() - diffToMonday);
   const sunday = new Date(monday);
-  sunday.setDate(monday.getDate()+6);
-  const fmt = (x)=> x.toISOString().slice(0,10);
-  return {monday, sunday, mondayStr:fmt(monday), sundayStr:fmt(sunday)};
+  sunday.setDate(monday.getDate() + 6);
+
+  return {
+    monday,
+    sunday,
+    mondayStr: formatLocalDate(monday),
+    sundayStr: formatLocalDate(sunday)
+  };
 }
 
+
 function renderCalendarAndStats(){
-  const baseDateStr = sessionDate.value || new Date().toISOString().slice(0,10);
+  const dStr = formatLocalDate(dayDate);
   const {monday, sunday} = getWeekRange(baseDateStr);
 
   let html = '<div class="badge"><span class="badge-dot"></span><span>Bieżący tydzień</span></div>';
