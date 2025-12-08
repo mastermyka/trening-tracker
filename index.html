@@ -498,6 +498,7 @@ const STORAGE_KEYS = {
   PLANS: 'tt_plans_v4',
   SESSIONS: 'tt_sessions_v4',
   SETTINGS: 'tt_settings_v4'
+  EXERCISES: 'tt_exercises_v1'
 };
 
 // --- Domyślne plany ---
@@ -537,6 +538,21 @@ const defaultPlans = {
     ]
   }
 };
+// --- Domyślna baza ćwiczeń ---
+const defaultExercises = [
+  { id:"bench_flat",      name:"Wyciskanie na ławce płaskiej", muscle:"klatka" },
+  { id:"row_bb",          name:"Wiosłowanie w opadzie", muscle:"plecy" },
+  { id:"hip_thrust",      name:"Hip thrust", muscle:"pośladki" },
+  { id:"leg_ext",         name:"Prostowanie nóg", muscle:"czworogłowe" },
+  { id:"leg_curl",        name:"Uginanie nóg", muscle:"dwugłowe" },
+  { id:"lat_pulldown",    name:"Ściąganie drążka do klatki", muscle:"plecy" },
+  { id:"ohp_db",          name:"Wyciskanie nad głowę hantlami", muscle:"barki" },
+  { id:"step_up",         name:"Step-up", muscle:"nogi" },
+  { id:"rdl",             name:"Martwy ciąg rumuński", muscle:"dwugłowe" },
+  { id:"incline_db",      name:"Wyciskanie hantli na skosie", muscle:"klatka" },
+  { id:"fly",             name:"Rozpiętki / guma fly", muscle:"klatka" },
+  { id:"row_low",         name:"Wiosłowanie dolnym wyciągiem", muscle:"plecy" }
+];
 
 // --- Pomocnicze DOM ---
 function el(q){ return document.querySelector(q) }
@@ -595,6 +611,23 @@ function loadSessions(){
 }
 function saveSessions(){
   localStorage.setItem(STORAGE_KEYS.SESSIONS, JSON.stringify(sessions));
+}
+// --- Baza ćwiczeń (localStorage) ---
+let exercises = [];
+
+function loadExercises(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEYS.EXERCISES);
+    if(!raw) return [...defaultExercises];
+    return JSON.parse(raw);
+  }catch(e){
+    console.warn("Błąd ładowania bazy ćwiczeń", e);
+    return [...defaultExercises];
+  }
+}
+
+function saveExercises(){
+  localStorage.setItem(STORAGE_KEYS.EXERCISES, JSON.stringify(exercises));
 }
 
 // --- Theme toggle ---
@@ -1337,14 +1370,19 @@ function renderPlanEditor(){
     <thead><tr><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Partia</th><th></th></tr></thead><tbody>`;
   (plan.exercises || []).forEach((ex, idx)=>{
     html += `<tr>
-      <td><input type="text" class="input ex-name" data-idx="${idx}" value="${ex.name}"></td>
+      <td>
+  <div style="display:flex; gap:4px;">
+    <input type="text" class="input ex-name" data-idx="${idx}" value="${ex.name}" style="flex:1">
+    <button class="btn-ghost btn-small pick-ex" data-idx="${idx}">📚</button>
+  </div>
+</td>
       <td><input type="number" class="input ex-sets" data-idx="${idx}" value="${ex.sets}" style="width:60px"></td>
       <td><input type="text" class="input ex-reps" data-idx="${idx}" value="${ex.reps}" style="width:80px"></td>
       <td><input type="text" class="input ex-muscle" data-idx="${idx}" value="${ex.muscle||''}" style="width:80px"></td>
       <td><button class="btn-ghost btn-small remove-ex" data-idx="${idx}">X</button></td>
     </tr>`;
   });
-  html += `</tbody></table>`;
+    html += `</tbody></table>`;
   planEditorArea.innerHTML = html;
 
   elAll('.remove-ex').forEach(btn=>{
@@ -1356,7 +1394,44 @@ function renderPlanEditor(){
       renderPlan(sessionType.value);
     });
   });
+
+  elAll('.pick-ex').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = parseInt(btn.dataset.idx);
+      openExercisePicker(idx);
+    });
+  });
 }
+// --- Picker ćwiczeń ---
+function openExercisePicker(idx){
+  const search = prompt("Wyszukaj ćwiczenie (nazwa / partia):", "");
+  const q = (search || "").toLowerCase();
+
+  const filtered = exercises.filter(ex =>
+    ex.name.toLowerCase().includes(q) ||
+    ex.muscle.toLowerCase().includes(q)
+  );
+
+  if(!filtered.length){
+    alert("Brak ćwiczeń pasujących do wyszukania.");
+    return;
+  }
+
+  let msg = "Wybierz numer ćwiczenia:\n\n";
+  filtered.forEach((ex,i)=>{
+    msg += `${i+1}. ${ex.name} (${ex.muscle})\n`;
+  });
+
+  const pick = parseInt(prompt(msg, "1")) - 1;
+  if(pick < 0 || pick >= filtered.length) return;
+
+  const chosen = filtered[pick];
+  const input = el(`.ex-name[data-idx="${idx}"]`);
+  const muscleInput = el(`.ex-muscle[data-idx="${idx}"]`);
+  if(input) input.value = chosen.name;
+  if(muscleInput) muscleInput.value = chosen.muscle;
+}
+
 
 el('#newPlanBtn').addEventListener('click', ()=>{
   const name = prompt('Nazwa nowego planu (np. Push, Full Body itp.):','Nowy plan');
@@ -1461,7 +1536,8 @@ saveBtn.addEventListener('click', saveSession);
 (function init(){
   plans = loadPlans();
   sessions = loadSessions();
-
+  exercises = loadExercises();
+  
   sessionDate.value = formatLocalDate(new Date());
   refreshPlanSelects();
   if(sessionType.options.length) sessionType.value = sessionType.options[0].value;
