@@ -654,35 +654,36 @@ function renderPlan(typeId){
       <div><strong>${ex.name}</strong><div class="small">${ex.muscle || ''}</div></div>
       <div class="small">Serii: ${ex.sets} • Powt: ${ex.reps}</div>
     </div>`;
-    html+='<table class="exercise-table"><thead><tr><th>Seria</th><th>Ciężar (kg)</th><th>Powt.</th><th>Odhacz</th></tr></thead><tbody>';
-    for(let s=1;s<=ex.sets;s++){
-      html+=`<tr class="set-row" data-ex="${idx}" data-set="${s}">
-  <td data-label="Seria">S${s}</td>
-  <td data-label="Ciężar">
-    <input
-      type="number"
-      class="series-input weight-input"
-      data-ex="${idx}"
-      data-set="${s}"
-      placeholder=""
-      step="0.5"
-    />
-  </td>
-  <td data-label="Powt.">
-    <input
-      type="number"
-      class="series-input reps-input"
-      data-ex="${idx}"
-      data-set="${s}"
-      placeholder="${ex.reps}"  <!-- zaplanowane powtórzenia w placeholderze -->
-    />
-  </td>
-  <td data-label="Odhacz">
-    <input type="checkbox" class="checkbox" data-ex="${idx}" data-set="${s}"/>
-  </td>
-</tr>`;
+        html += '<table class="exercise-table"><thead><tr><th>Seria</th><th>Ciężar (kg)</th><th>Plan</th><th>Powt. wykonane</th><th>Odhacz</th></tr></thead><tbody>';
+    for(let s=1; s<=ex.sets; s++){
+      html += `<tr class="set-row" data-ex="${idx}" data-set="${s}">
+        <td data-label="Seria">S${s}</td>
+        <td data-label="Ciężar">
+          <input
+            type="number"
+            class="series-input weight-input"
+            data-ex="${idx}"
+            data-set="${s}"
+            placeholder=""
+            step="0.5"
+          />
+        </td>
+        <td data-label="Plan" class="small">${ex.reps}</td>
+        <td data-label="Powt.">
+          <input
+            type="number"
+            class="series-input reps-input"
+            data-ex="${idx}"
+            data-set="${s}"
+            placeholder=""
+          />
+        </td>
+        <td data-label="Odhacz">
+          <input type="checkbox" class="checkbox" data-ex="${idx}" data-set="${s}"/>
+        </td>
+      </tr>`;
     }
-    html+='</tbody></table>';
+    html += '</tbody></table>';
     html+='<div class="progress-bar"><div class="progress-fill" id="progress-'+idx+'"></div></div>';
     wrapper.innerHTML=html;
     workoutArea.appendChild(wrapper);
@@ -996,10 +997,12 @@ function showSessionDetails(id){
   if(s.avgHr) msg += `Średnie HR: ${s.avgHr}\n`;
   if(s.maxHr) msg += `Maks HR: ${s.maxHr}\n`;
   msg += `Objętość: ${Math.round(s.totalVolume)} kg\n\nĆwiczenia:\n`;
-  (s.exercises || []).forEach(ex=>{
+    (s.exercises || []).forEach(ex=>{
     msg += `- ${ex.name}\n`;
     (ex.sets || []).forEach(st=>{
-      msg += `   S${st.set}: ${st.weight || 0} kg x ${st.repsText} ${st.done ? '✓' : ''}\n`;
+      const planTxt = st.repsPlannedText || (typeof st.repsPlanned === 'number' ? st.repsPlanned : '');
+      const doneTxt = (typeof st.repsDone === 'number' ? st.repsDone : '');
+      msg += `   S${st.set}: ${st.weight || 0} kg x ${doneTxt || '-'} (plan: ${planTxt || '-'}) ${st.done ? '✓' : ''}\n`;
     });
   });
   alert(msg);
@@ -1029,15 +1032,18 @@ function loadSessionToForm(id){
     (plan.exercises || []).forEach((ex, idx)=>{
       const sEx = (s.exercises || [])[idx];
       if(!sEx) return;
-      (sEx.sets || []).forEach(st=>{
+            (sEx.sets || []).forEach(st=>{
         const wInput = el(`input.weight-input[data-ex="${idx}"][data-set="${st.set}"]`);
-        const cb = el(`input.checkbox[data-ex="${idx}"][data-set="${st.set}"]`);
+        const rInput = el(`input.reps-input[data-ex="${idx}"][data-set="${st.set}"]`);
+        const cb     = el(`input.checkbox[data-ex="${idx}"][data-set="${st.set}"]`);
         if(wInput) wInput.value = st.weight || '';
+        if(rInput) rInput.value = (typeof st.repsDone === 'number' && st.repsDone > 0) ? st.repsDone : '';
         if(cb){
           cb.checked = !!st.done;
           updateSetRowStyle(cb);
         }
       });
+
     });
     updateProgress();
   }
