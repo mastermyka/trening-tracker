@@ -87,6 +87,7 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
   body{
     margin:6px;
     font-size:14px;
+    padding-bottom:60px; /* miejsce na dolny pasek */
   }
 
   header{
@@ -272,6 +273,40 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     grid-template-columns:1fr;
     gap:8px;
   }
+
+  /* --- Sekcje mobilne + dolny pasek --- */
+  .mobile-section{
+    display:none;
+  }
+  .mobile-section.active{
+    display:block;
+  }
+
+  .mobile-nav{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    height:52px;
+    background:var(--card);
+    border-top:1px solid rgba(11,18,38,0.08);
+    display:flex;
+    z-index:50;
+  }
+  .mobile-nav-btn{
+    flex:1;
+    border:none;
+    background:transparent;
+    font-size:12px;
+    font-weight:500;
+    padding:6px 4px;
+    cursor:pointer;
+    color:var(--muted);
+  }
+  .mobile-nav-btn.active{
+    color:var(--accent);
+    border-top:2px solid var(--accent);
+  }
 }
 </style>
 </head>
@@ -294,7 +329,8 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
 
 <div class="container">
   <div>
-    <div class="card" id="workoutCard">
+    <!-- SEKCJA TRENINGU (mobile-section) -->
+    <div class="card mobile-section" id="workoutCard" data-section="workout">
       <div class="workout-title">
         <div class="flex-col">
           <div class="section-title" id="planTitle">Trening A</div>
@@ -343,7 +379,8 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
   </div>
 
   <aside>
-    <div class="card">
+    <!-- SEKCJA KALENDARZA (mobile-section) -->
+    <div class="card mobile-section" id="calendarCard" data-section="calendar">
       <div class="section-title">Kalendarz / podsumowanie tygodnia</div>
       <div id="calendarWeek" class="small">Ładowanie...</div>
       <div style="margin-top:10px;">
@@ -352,7 +389,8 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
       </div>
     </div>
 
-    <div class="card" style="margin-top:12px">
+    <!-- SEKCJA HISTORII (mobile-section) -->
+    <div class="card mobile-section" id="historyCard" data-section="history" style="margin-top:12px">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div class="section-title">Historia sesji</div>
         <button id="loadLastBtn" class="btn-ghost btn-small">Otwórz ostatnią</button>
@@ -361,13 +399,22 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
       <div class="footer small">Dane zapisane lokalnie (localStorage). Możesz w każdej chwili zrobić backup przez skopiowanie danych z konsoli.</div>
     </div>
 
-    <div class="card" style="margin-top:12px">
+    <!-- SEKCJA WYKRESÓW (mobile-section) -->
+    <div class="card mobile-section" id="chartsCard" data-section="charts" style="margin-top:12px">
       <div class="section-title">Progres / wykresy</div>
       <div class="canvas-wrap"><canvas id="chartVolume" style="width:100%;height:180px"></canvas></div>
       <div class="canvas-wrap" style="margin-top:10px"><canvas id="chartWeight" style="width:100%;height:180px"></canvas></div>
     </div>
   </aside>
 </div>
+
+<!-- DOLNY PASEK NAWIGACJI (tylko mobile w CSS) -->
+<nav class="mobile-nav">
+  <button class="mobile-nav-btn active" data-section="workout">Trening</button>
+  <button class="mobile-nav-btn" data-section="calendar">Tydzień</button>
+  <button class="mobile-nav-btn" data-section="history">Historia</button>
+  <button class="mobile-nav-btn" data-section="charts">Wykresy</button>
+</nav>
 
 <audio id="alarmAudio" preload="auto">
   <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" type="audio/ogg">
@@ -882,7 +929,7 @@ function getWeekRange(baseDateStr){
 }
 
 function renderCalendarAndStats(){
-  const baseDateStr = sessionDate.value || formatLocalDate(new Date());
+  const baseDateStr = sessionDate.value || formatLocalDate(new Date()));
   const {monday, sunday} = getWeekRange(baseDateStr);
 
   let html = '<div class="badge"><span class="badge-dot"></span><span>Bieżący tydzień</span></div>';
@@ -1128,6 +1175,36 @@ el('#savePlanBtn').addEventListener('click', ()=>{
   renderPlan(sessionType.value);
 });
 
+// --- Mobile sekcje / zakładki ---
+function initMobileSections(){
+  const sections = document.querySelectorAll('.mobile-section');
+  const buttons = document.querySelectorAll('.mobile-nav-btn');
+
+  if (!sections.length || !buttons.length) return;
+
+  // domyślnie aktywny: workout
+  sections.forEach(sec=>{
+    if (sec.dataset.section === 'workout'){
+      sec.classList.add('active');
+    } else {
+      sec.classList.remove('active');
+    }
+  });
+
+  buttons.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const target = btn.dataset.section;
+
+      buttons.forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+
+      sections.forEach(sec=>{
+        sec.classList.toggle('active', sec.dataset.section === target);
+      });
+    });
+  });
+}
+
 // --- Zdarzenia na zmianę typu i daty / zapis ---
 sessionType.addEventListener('change', ()=>{
   renderPlan(sessionType.value);
@@ -1152,6 +1229,7 @@ saveBtn.addEventListener('click', saveSession);
   renderHistory();
   renderCalendarAndStats();
   updateCharts();
+  initMobileSections(); // <-- nowa funkcja do obsługi sekcji
 })();
 </script>
 </body>
