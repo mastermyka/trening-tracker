@@ -195,7 +195,7 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     max-height:220px;
   }
 
-  /* SEKCJA ĆWICZEŃ – pionowo: S1, ciężar, powt., checkbox z prawej */
+  /* Ćwiczenia – pion: S1, ciężar, powt., checkbox z prawej */
   .exercise-table{
     width:100%;
     border-collapse:collapse;
@@ -205,7 +205,7 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
   }
   .exercise-table tr{
     display:grid;
-    grid-template-columns:1fr auto;  /* lewa kolumna: tekst + inputy, prawa: checkbox */
+    grid-template-columns:1fr auto;
     grid-template-rows:auto auto auto;
     align-items:center;
     gap:2px 4px;
@@ -230,19 +230,75 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
   }
   .exercise-table td[data-label="Odhacz"]{
     grid-column:2;
-    grid-row:1 / 4; /* od góry do dołu */
+    grid-row:1 / 4;
     display:flex;
     justify-content:flex-end;
     align-items:center;
   }
 
-  #planEditorCard,
-  aside .card{
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-  }
+  /* --- EDYTOR PLANÓW – kompaktowy układ 2 linie --- */
   #planEditorArea table{
-    min-width:480px;
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0 6px; /* odstęp między ćwiczeniami */
+  }
+  #planEditorArea thead{
+    display:none; /* chowamy nagłówek tabeli */
+  }
+  #planEditorArea tr{
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr auto; /* name | sets | muscle | X */
+    grid-template-rows:auto auto;          /* (ćwiczenie/serie) + (powt/partia) */
+    grid-template-areas:
+      "name sets sets remove"
+      "reps reps muscle remove";
+    gap:4px 6px;
+    padding:4px 0;
+    align-items:center;
+  }
+  #planEditorArea td{
+    border:none;
+    padding:0;
+  }
+  #planEditorArea td:nth-child(1){ /* ćwiczenie */
+    grid-area:name;
+  }
+  #planEditorArea td:nth-child(2){ /* serie */
+    grid-area:sets;
+  }
+  #planEditorArea td:nth-child(3){ /* powtórzenia */
+    grid-area:reps;
+  }
+  #planEditorArea td:nth-child(4){ /* partia */
+    grid-area:muscle;
+  }
+  #planEditorArea td:nth-child(5){ /* X */
+    grid-area:remove;
+    justify-self:end;
+  }
+  /* etykiety nad polami – jak „Ćwiczenie  Serie / Powt  Partia” */
+  #planEditorArea td:nth-child(1)::before,
+  #planEditorArea td:nth-child(2)::before,
+  #planEditorArea td:nth-child(3)::before,
+  #planEditorArea td:nth-child(4)::before{
+    display:block;
+    font-size:10px;
+    color:var(--muted);
+    margin-bottom:2px;
+  }
+  #planEditorArea td:nth-child(1)::before{content:"Ćwiczenie";}
+  #planEditorArea td:nth-child(2)::before{content:"Serie";}
+  #planEditorArea td:nth-child(3)::before{content:"Powt.";}
+  #planEditorArea td:nth-child(4)::before{content:"Partia";}
+
+  #planEditorArea input.input{
+    width:100%;
+    font-size:13px;
+    padding:6px 8px;
+  }
+
+  #planEditorCard{
+    overflow:visible;
   }
 
   .week-grid{
