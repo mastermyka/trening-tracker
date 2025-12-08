@@ -573,12 +573,22 @@ function loadPlans(){
     const raw = localStorage.getItem(STORAGE_KEYS.PLANS);
     if(!raw) return JSON.parse(JSON.stringify(defaultPlans));
     const parsed = JSON.parse(raw);
-    return {...JSON.parse(JSON.stringify(defaultPlans)), ...parsed};
+
+    // kopia domyślnych planów
+    var merged = JSON.parse(JSON.stringify(defaultPlans));
+    // nadpisz / dodaj plany z localStorage
+    for (var key in parsed){
+      if (Object.prototype.hasOwnProperty.call(parsed, key)){
+        merged[key] = parsed[key];
+      }
+    }
+    return merged;
   }catch(e){
     console.warn('Błąd wczytywania planów', e);
     return JSON.parse(JSON.stringify(defaultPlans));
   }
 }
+
 function savePlans(){
   localStorage.setItem(STORAGE_KEYS.PLANS, JSON.stringify(plans));
 }
@@ -899,7 +909,7 @@ function renderHistory(){
     historyDiv.innerHTML = '<div class="small">Brak zapisanych sesji.</div>';
     return;
   }
-  const last = [...sessions].sort((a,b)=> parseDate(b.date) - parseDate(a.date)).slice(0,30);
+  const last = sessions.slice().sort((a,b)=> parseDate(b.date) - parseDate(a.date)).slice(0,30);
   last.forEach(s=>{
     const div = document.createElement('div');
     div.className = 'history-item';
@@ -999,9 +1009,10 @@ loadLastBtn.addEventListener('click', ()=>{
     alert('Brak zapisanych sesji.');
     return;
   }
-  const last = [...sessions].sort((a,b)=> parseDate(b.date) - parseDate(a.date))[0];
+  const last = sessions.slice().sort((a,b)=> parseDate(b.date) - parseDate(a.date))[0];
   loadSessionToForm(last.id);
 });
+
 
 // --- Kalendarz tygodniowy + statystyki ---
 function getWeekRange(baseDateStr){
