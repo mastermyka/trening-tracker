@@ -1614,13 +1614,16 @@ saveBtn.addEventListener('click', saveSession);
 
   sessionDate.value = formatLocalDate(new Date());
   refreshPlanSelects();
-  ...
+
+  renderPlan(sessionType.value);
+  renderPlanEditor();
   renderHistory();
   renderCalendarAndStats();
   updateCharts();
   initMobileSections();
-  renderExerciseDb();   // <-- DODANE
+  renderExerciseDb();   // baza ćwiczeń – OK
 })();
+
 
 </script>
 </body>
