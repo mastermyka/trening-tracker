@@ -861,6 +861,7 @@ function saveSession(){
   renderHistory();
   renderCalendarAndStats();
   updateCharts();
+  resetAfterSave();
   alert('Sesja zapisana (Premium 4.3 ✅)');
 }
 
@@ -1154,6 +1155,26 @@ function updateCharts(){
       scales:{x:{ticks:{autoSkip:true,maxTicksLimit:6}},y:{beginAtZero:false}}
     }
   });
+}
+function resetAfterSave(){
+  // 1) odznacz wszystkie serie
+  elAll('.checkbox').forEach(cb=>{
+    cb.checked = false;
+    updateSetRowStyle(cb);
+  });
+  updateProgress();
+
+  // 2) wyczyść dane sesji (jak po odświeżeniu)
+  ['#sessionKcal','#avgHr','#maxHr','#durationMin','#bodyWeight'].forEach(sel=>{
+    const input = el(sel);
+    if(input) input.value = '';
+  });
+
+  // 3) wyzeruj timer + pole przerwy
+  clearInterval(timerInterval);
+  timerDisplay.textContent = '0s';
+  const restInput = el('#restTime');
+  if(restInput) restInput.value = '';
 }
 
 // --- Edytor planów ---
