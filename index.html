@@ -316,21 +316,23 @@ th{background:transparent;text-align:left;color:var(--muted);font-weight:600}
     overflow:visible;
   }
 
-  .week-grid{
-    display:grid;
-    grid-auto-flow:column;
-    grid-auto-columns:minmax(110px, 1fr);
+    .week-grid{
+    display:flex;                 /* zamiast grid */
     gap:6px;
     margin-top:6px;
     font-size:11px;
     overflow-x:auto;
     -webkit-overflow-scrolling:touch;
   }
+
   .week-day{
     min-height:auto;
     padding:6px;
     white-space:normal;
+    min-width:110px;              /* każdy dzień ma stałą szerokość */
+    flex:0 0 auto;                /* nie zwija się, jest scroll */
   }
+
 
   #chartVolume,
   #chartWeight{
